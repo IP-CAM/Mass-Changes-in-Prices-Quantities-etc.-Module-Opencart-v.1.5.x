@@ -72,6 +72,8 @@ class ControllerModulePageOrderBobs extends Controller
       `currency_code_check` TINYINT(1) NOT NULL ,
       `price_total` DECIMAL(15,4) NOT NULL ,
       `price` DECIMAL(15,4) NOT NULL ,
+      `option_client_percent_default` INT(11) NOT NULL ,
+      `option_client_percent` TEXT NOT NULL ,
       `per_cent_of_all` INT(11) NOT NULL ,
       `receiver_of_product` VARCHAR(63) NOT NULL ,
       `description_order` TEXT NOT NULL ,
@@ -101,6 +103,8 @@ class ControllerModulePageOrderBobs extends Controller
     ( `parameters_id` INT(11) NOT NULL ,
     `get_order_id` INT(11) NULL ,
     `currency_code_check` TINYINT(1) NOT NULL ,
+    `option_client_percent_default` INT(11) NOT NULL ,
+    `option_client_percent` TEXT NOT NULL ,
     `pay2pay_check` TINYINT(1) NOT NULL ,
     `pay2pay_identifier_shop` VARCHAR(63) NOT NULL ,
     `pay2pay_key_secret` VARCHAR(63) NOT NULL ,
@@ -120,6 +124,8 @@ class ControllerModulePageOrderBobs extends Controller
             `parameters_id` = '1',
             `currency_code_check` =0 ,
             `get_order_id` = null,
+            `option_client_percent_default` = 10 ,
+            `option_client_percent` = '' ,
             `pay2pay_check` = 1,
             `pay2pay_identifier_shop` = '57249',
             `pay2pay_key_secret` = 'nordston',
@@ -144,9 +150,9 @@ class ControllerModulePageOrderBobs extends Controller
 
         $this->db->query("DELETE FROM " . DB_PREFIX . "url_alias WHERE query LIKE 'page_order_bobs_id%'");
         $this->db->query("DROP TABLE IF EXISTS
-			`" . DB_PREFIX . "page_order_bobs`,
-			`" . DB_PREFIX . "page_order_bobs_description`,
-			`" . DB_PREFIX . "page_order_bobs_parameters`;");
+			`" . DB_PREFIX . "order_page_bobs`,
+			`" . DB_PREFIX . "order_page_bobs_description`,
+			`" . DB_PREFIX . "order_page_bobs_parameters`");
 
     }
 

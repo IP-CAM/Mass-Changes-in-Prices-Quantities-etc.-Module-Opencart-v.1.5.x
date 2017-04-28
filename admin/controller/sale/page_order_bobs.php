@@ -10,41 +10,39 @@ class ControllerSalePageOrderBobs extends Controller
         $this->language->load('sale/page_order_bobs');
         $json = array();
         if (!isset($this->request->post['price']) || !isset($this->request->post['percent']) ||
-            !isset($this->request->post['description_order'])) {
+            !isset($this->request->post['description_order'])
+        ) {
             exit;
         }
-        $percent=substr($this->request->post['percent'],0,-1);
-        $price=$this->request->post['price']*$percent/100;
-        $json['price']=$price;
-        $prefix_damp=$this->currency->format(1000);
-        $prefix=mb_substr($prefix_damp,-2, 2,'UTF-8'); //p.
-        $pattern='/'.$this->language->get('per_cent_of_all_description_text').'.*%, '.mb_strtolower($this->language->get('price_new_label'),'UTF-8').'.*'.$prefix.'/';
-        $text=$this->request->post['description_order'];
-        if(preg_match($pattern,$text))
-        { //text empty (yes)
-            if($percent=='100')
-            { //delete text description_order
-                $text=preg_replace($pattern,'',$text); //DELETE
-                $pattern='/\n$/';
-                $json['description_order']=preg_replace($pattern,'',$text);
-            }else{
-                $patterns=Array();
-                $patterns[0]='/'.$this->language->get('per_cent_of_all_description_text').'.*%/';
-                $patterns[1]='/'.mb_strtolower($this->language->get('price_new_label'),'UTF-8').'.*'.$prefix.'/';
-                $replace=array();
-                $replace[0]=$this->language->get('per_cent_of_all_description_text').' '.$this->request->post['percent'];
-                $replace[1]=mb_strtolower($this->language->get('price_new_label'),'UTF-8').' '.$this->currency->format($price);
-                $json['description_order']=preg_replace($patterns,$replace,$text);
+        $percent = substr($this->request->post['percent'], 0, -1);
+        $price = $this->request->post['price'] * $percent / 100;
+        $json['price'] = $price;
+        $prefix_damp = $this->currency->format(1000);
+        $prefix = mb_substr($prefix_damp, -2, 2, 'UTF-8'); //p.
+        $pattern = '/' . $this->language->get('per_cent_of_all_description_text') . '.*%, ' . mb_strtolower($this->language->get('price_new_label'), 'UTF-8') . '.*' . $prefix . '/';
+        $text = $this->request->post['description_order'];
+        if (preg_match($pattern, $text)) { //text empty (yes)
+            if ($percent == '100') { //delete text description_order
+                $text = preg_replace($pattern, '', $text); //DELETE
+                $pattern = '/\n$/';
+                $json['description_order'] = preg_replace($pattern, '', $text);
+            } else {
+                $patterns = Array();
+                $patterns[0] = '/' . $this->language->get('per_cent_of_all_description_text') . '.*%/';
+                $patterns[1] = '/' . mb_strtolower($this->language->get('price_new_label'), 'UTF-8') . '.*' . $prefix . '/';
+                $replace = array();
+                $replace[0] = $this->language->get('per_cent_of_all_description_text') . ' ' . $this->request->post['percent'];
+                $replace[1] = mb_strtolower($this->language->get('price_new_label'), 'UTF-8') . ' ' . $this->currency->format($price);
+                $json['description_order'] = preg_replace($patterns, $replace, $text);
             }
-        }else{
-            if($percent=='100')
-            {
-                $json['description_order']=$this->request->post['description_order'];
-            }else{
-                $json['description_order']=$this->request->post['description_order']."\n".$this->language->get('per_cent_of_all_description_text').' '.$this->request->post['percent'].', '.mb_strtolower($this->language->get('price_new_label'),'UTF-8').' '.$this->currency->format($price);
+        } else {
+            if ($percent == '100') {
+                $json['description_order'] = $this->request->post['description_order'];
+            } else {
+                $json['description_order'] = $this->request->post['description_order'] . "\n" . $this->language->get('per_cent_of_all_description_text') . ' ' . $this->request->post['percent'] . ', ' . mb_strtolower($this->language->get('price_new_label'), 'UTF-8') . ' ' . $this->currency->format($price);
             }
         }
-        $json['price_total_text'] = $this->language->get('price_total_text').' '. $this->currency->format($this->request->post['price']);
+        $json['price_total_text'] = $this->language->get('price_total_text') . ' ' . $this->currency->format($this->request->post['price']);
         $this->response->setOutput(json_encode($json));
 
     }
@@ -278,18 +276,16 @@ class ControllerSalePageOrderBobs extends Controller
                 'href' => $this->url->link('sale/page_order_bobs/update', 'token=' . $this->session->data['token'] . '&page_id=' . $result['page_id'] . $url, 'SSL')
             );
 
-            if($result['price']==$result['price_total'])
-            {
-                $price=$this->currency->format($result['price_total']);
-            }else
-            {
-                $price=$this->currency->format($result['price_total']).$this->language->get('price_list').$result['per_cent_of_all'].'%';
+            if ($result['price'] == $result['price_total']) {
+                $price = $this->currency->format($result['price_total']);
+            } else {
+                $price = $this->currency->format($result['price_total']) . $this->language->get('price_list') . $result['per_cent_of_all'] . '%';
             }
 
             if ($this->config->get('config_seo_url')) {
                 $link = $server_host . $result['keyword']; //$this->model_module_page_order_bobs->,
             } else {
-                $link = $server_host . 'index.php?route=information/page_order_bobs&page_order_bobs_id='.$result['page_id'];
+                $link = $server_host . 'index.php?route=information/page_order_bobs&page_order_bobs_id=' . $result['page_id'];
             }
 
             $this->data['pages'][] = array(
@@ -425,6 +421,9 @@ class ControllerSalePageOrderBobs extends Controller
         $this->data['currency_code_label'] = $this->language->get('currency_code');
         $this->data['price_label'] = $this->language->get('price_label');
         $this->data['price_new_label'] = $this->language->get('price_new_label');
+        $this->data['option_client_percent_label'] = $this->language->get('option_client_percent_label');
+        $this->data['option_client_percent_default_label'] = $this->language->get('option_client_percent_default_label');
+
 
         $this->data['receiver_of_product_label'] = $this->language->get('receiver_of_product');
         $this->data['description_order_label'] = $this->language->get('description_order');
@@ -477,10 +476,16 @@ class ControllerSalePageOrderBobs extends Controller
             $this->data['price_total'] = $array_post_parameter['price_total'];
             $this->data['price'] = $array_post_parameter['price'];
             $this->data['per_cent_of_all'] = $array_post_parameter['per_cent_of_all'];
-            if($array_post_parameter['price_total']!=$array_post_parameter['price'])
-            {
-                $this->data['price_total_text'] = $this->language->get('price_total_text').' '. $this->currency->format($array_post_parameter['price_total']);
+            if ($array_post_parameter['price_total'] != $array_post_parameter['price']) {
+                $this->data['price_total_text'] = $this->language->get('price_total_text') . ' ' . $this->currency->format($array_post_parameter['price_total']);
             }
+            $this->data['option_client_percent_default'] =
+                ($array_post_parameter['option_client_percent_default'] != null) ?
+                    $array_post_parameter['option_client_percent_default'] : 10;
+            $this->data['option_client_percent'] =
+                ($array_post_parameter['option_client_percent'] != null) ?
+                    unserialize($array_post_parameter['option_client_percent']) :
+                    $array_post_parameter['option_client_percent'];
             $this->data['receiver_of_product'] = $array_post_parameter['receiver_of_product'];
             $this->data['description_order'] = $array_post_parameter['description_order'];
             $this->data['delivery_address'] = $array_post_parameter['delivery_address'];
@@ -528,6 +533,16 @@ class ControllerSalePageOrderBobs extends Controller
             $this->data['price_total'] = '1000';
             $this->data['price'] = '1000';
             $this->data['per_cent_of_all'] = '100';
+
+            $this->data['option_client_percent_default'] =
+                ($order_page_parameters['option_client_percent_default'] != null) ?
+                    $order_page_parameters['option_client_percent_default'] : 10;
+
+            $this->data['option_client_percent'] =
+                ($order_page_parameters['option_client_percent'] != null) ?
+                    unserialize($order_page_parameters['option_client_percent']) :
+                    $order_page_parameters['option_client_percent'];
+
             $this->data['receiver_of_product'] = 'Вася Пупкин';
             $this->data['description_order'] = 'описание заказа';
             $this->data['delivery_address'] = '';
@@ -905,35 +920,44 @@ class ControllerSalePageOrderBobs extends Controller
         //Percent
         switch ($array_post_parameter['per_cent_of_all']) {
             case 1:
-                $array_post_parameter['per_cent_of_all']=10;
+                $array_post_parameter['per_cent_of_all'] = 10;
                 break;
             case 2:
-                $array_post_parameter['per_cent_of_all']=20;
+                $array_post_parameter['per_cent_of_all'] = 20;
                 break;
             case 3:
-                $array_post_parameter['per_cent_of_all']=30;
+                $array_post_parameter['per_cent_of_all'] = 30;
                 break;
             case 4:
-                $array_post_parameter['per_cent_of_all']=40;
+                $array_post_parameter['per_cent_of_all'] = 40;
                 break;
             case 5:
-                $array_post_parameter['per_cent_of_all']=50;
+                $array_post_parameter['per_cent_of_all'] = 50;
                 break;
             case 6:
-                $array_post_parameter['per_cent_of_all']=60;
+                $array_post_parameter['per_cent_of_all'] = 60;
                 break;
             case 7:
-                $array_post_parameter['per_cent_of_all']=70;
+                $array_post_parameter['per_cent_of_all'] = 70;
                 break;
             case 8:
-                $array_post_parameter['per_cent_of_all']=80;
+                $array_post_parameter['per_cent_of_all'] = 80;
                 break;
             case 9:
-                $array_post_parameter['per_cent_of_all']=90;
+                $array_post_parameter['per_cent_of_all'] = 90;
                 break;
             case 10:
-                $array_post_parameter['per_cent_of_all']=100;
+                $array_post_parameter['per_cent_of_all'] = 100;
                 break;
+        }
+        $array_post_parameter['option_client_percent'] = null;
+        if (isset($post['option_client_percent'])) {
+            $array_post_parameter['option_client_percent'] = serialize($post['option_client_percent']);
+        } else {
+            $array_post_parameter['option_client_percent'] = '';
+        }
+        if (!isset($post['option_client_percent_default'])) {
+            $array_post_parameter['option_client_percent_default']=10;
         }
 
 
@@ -1006,9 +1030,9 @@ class ControllerSalePageOrderBobs extends Controller
             $identifier_order = $this->request->post['interkassa_identifier_shop'];
             $linkInterkassa = "https://sci.interkassa.com/?ik_co_id=$identifier_order&ik_pm_no=$order_id&ik_am=$price";
             if ($this->request->post['robokassa_test_mode']) {
-                $linkInterkassa = $linkInterkassa."&ik_pw_via=test_interkassa_test_xts";
+                $linkInterkassa = $linkInterkassa . "&ik_pw_via=test_interkassa_test_xts";
             }
-            $linkInterkassa = $linkInterkassa. "&ik_cur=$currency_code&ik_desc=$description_order_interkassa#/paysystemList";
+            $linkInterkassa = $linkInterkassa . "&ik_cur=$currency_code&ik_desc=$description_order_interkassa#/paysystemList";
         }
         $array_link = Array();
         $array_link['link_pay2pay'] = $linkPay2pay;

@@ -10,6 +10,8 @@ class ModelSalePageOrderBobs extends Model
             `parameters_id` = '1', " .
                 "`get_order_id` = null, " .
                 "`currency_code_check` = '" . (int)$array_post_parameter['currency_code_check'] . "', " .
+                "`option_client_percent_default` = " . (int)$array_post_parameter['option_client_percent_default'] . ", " .
+                "`option_client_percent` = '" . $this->db->escape($array_post_parameter['option_client_percent']) . "', " .
                 "`pay2pay_check` = '" . (int)$array_post_parameter['pay2pay_check'] . "', " .
                 "`pay2pay_identifier_shop` = '" . $this->db->escape($array_post_parameter['pay2pay_identifier_shop']) . "', " .
                 "`pay2pay_key_secret` = '" . $this->db->escape($array_post_parameter['pay2pay_key_secret']) . "', " .
@@ -27,6 +29,8 @@ class ModelSalePageOrderBobs extends Model
                 `parameters_id` = '1', " .
                 "`get_order_id` = '" . (int)$array_post_parameter['get_order_id'] . "', " .
                 "`currency_code_check` = '" . (int)$array_post_parameter['currency_code_check'] . "', " .
+                "`option_client_percent_default` = " . (int)$array_post_parameter['option_client_percent_default'] . ", " .
+                "`option_client_percent` = '" . $this->db->escape($array_post_parameter['option_client_percent']) . "', " .
                 "`pay2pay_check` = '" . (int)$array_post_parameter['pay2pay_check'] . "', " .
                 "`pay2pay_identifier_shop` = '" . $this->db->escape($array_post_parameter['pay2pay_identifier_shop']) . "', " .
                 "`pay2pay_key_secret` = '" . $this->db->escape($array_post_parameter['pay2pay_key_secret']) . "', " .
@@ -287,6 +291,8 @@ class ModelSalePageOrderBobs extends Model
         `price_total`,
         `price`,
         `per_cent_of_all`,
+        `option_client_percent_default`,
+        `option_client_percent`,
         `receiver_of_product`,
         `description_order`,
         `delivery_address`,
@@ -316,7 +322,9 @@ class ModelSalePageOrderBobs extends Model
             $this->db->escape($array_post_parameter['currency_code']) . "', " .
             (float)$array_post_parameter['price_total'] . ", " .
             (float)$array_post_parameter['price'] . ", " .
-            (int)$array_post_parameter['per_cent_of_all'] . ", '" .
+            (int)$array_post_parameter['per_cent_of_all'] . ", " .
+            (int)$array_post_parameter['option_client_percent_default'] . ", '" .
+            $this->db->escape($array_post_parameter['option_client_percent']) . "', '" .
             $this->db->escape($array_post_parameter['receiver_of_product']) . "', '" .
             $this->db->escape($array_post_parameter['description_order']) . "', '" .
             $this->db->escape($array_post_parameter['delivery_address']) . "', '" .

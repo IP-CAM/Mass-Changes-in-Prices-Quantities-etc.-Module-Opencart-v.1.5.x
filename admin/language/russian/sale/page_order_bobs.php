@@ -30,6 +30,7 @@ $_['price_total_text']       	  = 'Общая стоймость заказа';
 $_['per_cent_of_all_description_text']       	  = 'Предоплата';
 
 $_['option_client_percent_label']       	  = 'Дать возможность выбора процента оплаты клиенту';
+$_['option_client_percent_default_label']       	  = 'По умолчанию';
 
 $_['description_order']       	  = 'Описание заказа';
 

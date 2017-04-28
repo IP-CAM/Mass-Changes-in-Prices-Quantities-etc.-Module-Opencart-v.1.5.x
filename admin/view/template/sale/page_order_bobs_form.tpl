@@ -143,23 +143,23 @@
                         <span id="per_cent_of_all_text"><?php if(isset($price_total_text)) { echo $price_total_text; } ?></span>
                     </td>
                 </tr>
+                <?php if($page_form){ ?>
                 <tr>
-                    <td><span id="price_label"><?php echo $price_label; ?></span></td>
+                    <td><span><?php echo $option_client_percent_label; ?></span></td>
                     <td>
-                        <p><input type="checkbox" name="ch" value="1" <?php if($per_cent_of_all==10) { ?> checked"<?php } ?>>10%</p>
-                        <p><input type="checkbox" name="ch" value="2" <?php if($per_cent_of_all==20) { ?> checked"<?php } ?>>20%</p>
-                        <p><input type="checkbox" name="ch" value="3" <?php if($per_cent_of_all==30) { ?> checked"<?php } ?>>30%</p>
-                        <p><input type="checkbox" name="ch" value="4" <?php if($per_cent_of_all==40) { ?> checked"<?php } ?>>40%</p>
-                        <p><input type="checkbox" name="ch" value="5" <?php if($per_cent_of_all==50) { ?> checked"<?php } ?>>50%</p>
-                        <p><input type="checkbox" name="ch" value="6" <?php if($per_cent_of_all==60) { ?> checked"<?php } ?>>60%</p>
-                        <p><input type="checkbox" name="ch" value="7" <?php if($per_cent_of_all==70) { ?> checked"<?php } ?>>70%</p>
-                        <p><input type="checkbox" name="ch" value="8" <?php if($per_cent_of_all==80) { ?> checked"<?php } ?>>80%</p>
-                        <p><input type="checkbox" name="ch" value="9" <?php if($per_cent_of_all==90) { ?> checked"<?php } ?>>90%</p>
-                        <p><input type="checkbox" name="ch" value="10" <?php if($per_cent_of_all==100) { ?> checked"<?php } ?>>100%</p>
-
-                        <span id="per_cent_of_all_text"><?php if(isset($price_total_text)) { echo $price_total_text; } ?></span>
+                        <?php for ($i = 10; $i <= 100; $i+=10) { ?>
+                        <p><span>
+                                <?php echo $option_client_percent_default_label; ?>
+                            </span>
+                            <input type="radio" name="option_client_percent_default" value="<?php echo $i ?>" <?php if($option_client_percent_default==$i){ ?> checked="checked" <?php } ?> />
+                            <input type="checkbox" name="option_client_percent[]" value="<?php echo $i ?>" <?php
+                            if($option_client_percent!=null) {
+                            if(array_search($i,$option_client_percent)!==false) { ?> checked="checked"<?php } } ?>><?php echo $i ?>%
+                        </p>
+                        <?php } ?>
                     </td>
                 </tr>
+                <?php } ?>
                 <tr>
                     <td><span class="required">*</span><?php echo $receiver_of_product_label; ?></td>
                     <td><input type="text" name="receiver_of_product" value="<?php echo $receiver_of_product; ?>"/></td>
@@ -293,18 +293,6 @@
                     <td><?php echo $number_cart_sberbank_label; ?></td>
                     <td><input type="text" name="sberbank_number_cart"
                                value="<?php echo $sberbank_number_cart; ?>"/>
-                    </td>
-                </tr>
-                <tr>
-                    <td><?php echo $test_mode_interkassa_label; ?></td>
-                    <td>
-                        <?php if ($interkassa_test_mode) { ?>
-                        <input type="radio" name="interkassa_test_mode" value="1" checked="checked" /><?php echo $text_yes; ?>
-                        <input type="radio" name="interkassa_test_mode" value="0" /><?php echo $text_no; ?>
-                        <?php } else { ?>
-                        <input type="radio" name="interkassa_test_mode" value="1" /><?php echo $text_yes; ?>
-                        <input type="radio" name="interkassa_test_mode" value="0"  checked="checked"/><?php echo $text_no; ?>
-                        <?php } ?>
                     </td>
                 </tr>
             </TABLE>
