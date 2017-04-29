@@ -2,7 +2,101 @@
 
 class ControllerInformationPageOrderBobs extends Controller
 {
+    public function post()
+    {
 
+          $json = array();
+        $json=$this->getLink($this->request->post['order_id'],$this->request->post['percent']);
+        $this->response->setOutput(json_encode($json));
+
+    }
+
+    private function getLink($order_id, $percent)
+    {
+        $this->language->load('information/page_order_bobs');
+        $percent_label = $this->language->get('percent_label');
+        $sql = "SELECT * FROM `" . DB_PREFIX . "page_order_bobs_description` WHERE `order_id` LIKE " . (int)$order_id;
+        $obj_sql_page = $this->db->query($sql);
+        if ($obj_sql_page->num_rows == 0) {
+            return false;
+        }
+        $page=$obj_sql_page->row;
+
+        $langInterface = "ru";
+        $linkPay2pay = "";
+        $linkRobokassa = "";
+        $linkInterkassa = "";
+
+        $currency_code = $page['currency_code'];
+        $price = $page['price_total']; //Summa
+        $price = ((float)$price*(int)$percent)/100; //update
+        $price = floor($price); //delete  TODO
+
+        $description_order = (string)$page['description_order'];
+        $description_order.=' '.$percent_label.' '.$percent.'%';  //update
+        if (isset($page['pay2pay_check'])) {
+            $identifier_order = $page['pay2pay_identifier_shop'];
+            $test_mode = $page['pay2pay_test_mode'];
+            $key_secret = $page['pay2pay_key_secret'];
+
+
+            //Pay2pay
+            $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+            $xml .= "<request>";
+            $xml .= "<version>" . "1.2" . "</version>";
+            $xml .= "<merchant_id>" . $identifier_order . "</merchant_id>";
+            $xml .= "<language>" . $langInterface . "</language>";
+            $xml .= "<order_id>" . $order_id . "</order_id>";
+            $xml .= "<amount>" . $price . "</amount>";
+            $xml .= "<currency>" . $currency_code . "</currency>";
+            $xml .= "<description>" . $description_order . "</description>";
+            $xml .= "<paymode><code>" . "" . "</code></paymode>";
+            $xml .= "<test_mode>" . $test_mode . "</test_mode>";
+            $xml .= "</request>";
+            $key = $key_secret;
+
+            $sign = md5($key . $xml . $key);
+
+            $xml = base64_encode($xml);
+            $sign = base64_encode($sign);
+
+            $linkPay2pay = 'https://merchant.pay2pay.com/?page=init' . "&xml=" . $xml . "&sign=" . $sign;
+        }
+        if (isset($page['robokassa_check'])) {
+            $robokassa_identifier_shop = $page['robokassa_identifier_shop'];
+            $robokassa_key_secret = $page['robokassa_key_secret'];
+            $robokassa_test_mode = $page['robokassa_test_mode'];
+            //Robokassa
+            $price_format = number_format($price, 2, '.', '');
+            $crc = md5("$robokassa_identifier_shop:$price_format:$order_id:$robokassa_key_secret");
+            $linkRobokassa = "https://merchant.roboxchange.com/Index.aspx?" .
+                "MerchantLogin=$robokassa_identifier_shop&IsTest=$robokassa_test_mode&OutSum=$price_format&InvId=$order_id" .
+                "&Desc=$description_order&SignatureValue=$crc";
+
+
+        }
+
+        if (isset($page['interkassa_check'])) //interkassa
+        {
+            $description_order_interkassa = $description_order;
+            while ($this->getLengthStringUrl($description_order_interkassa) > 210) {
+                $description_order_interkassa = substr($description_order_interkassa, 0, -5);
+            }
+
+            $identifier_order = $page['interkassa_identifier_shop'];
+            $linkInterkassa = "https://sci.interkassa.com/?ik_co_id=$identifier_order&ik_pm_no=$order_id&ik_am=$price";
+            if ($page['robokassa_test_mode']) {
+                $linkInterkassa = $linkInterkassa . "&ik_pw_via=test_interkassa_test_xts";
+            }
+            $linkInterkassa = $linkInterkassa . "&ik_cur=$currency_code&ik_desc=$description_order_interkassa#/paysystemList";
+        }
+        $array_link = Array();
+        $array_link['link_pay2pay'] = $linkPay2pay;
+        $array_link['link_robokassa'] = $linkRobokassa;
+        $array_link['link_interkassa'] = $linkInterkassa;
+        return $array_link;
+
+    }
 
     public function index()
     {
@@ -59,7 +153,7 @@ class ControllerInformationPageOrderBobs extends Controller
             $this->data['column_total'] = $this->language->get('column_total');
 
             $this->data['list_payment'] = $this->language->get('list_payment');
-
+            $this->data['option_client_percent_label'] = $this->language->get('option_client_percent_label');
             $this->data['link_pay2pay_label'] = $this->language->get('link_pay2pay_label');
             $this->data['link_robokassa_label'] = $this->language->get('link_robokassa_label');
             $this->data['link_interkassa_label'] = $this->language->get('link_interkassa_label');
@@ -76,7 +170,7 @@ class ControllerInformationPageOrderBobs extends Controller
             if (!$page['order_alter_check']) {
                 $order = 0; //No tabl? if no tabl programm
             }
-
+                //if is store no empty order
             if ($order) {
                 $this->data['order'] = true;
 
@@ -168,7 +262,23 @@ class ControllerInformationPageOrderBobs extends Controller
                 }
             }
 
-
+            $this->data['order_id'] = $page['order_id'];
+            $this->data['option_client_percent_default'] = $page['option_client_percent_default'];
+            if($page['option_client_percent']!=null)
+            {
+                $options_client_percent = unserialize($page['option_client_percent']);
+                $options_client_percent_general=array();
+                foreach($options_client_percent as $key=>$option_client_percent)
+                {
+                    $options_client_percent_general[$key]['percent']=$option_client_percent;
+                    $options_client_percent_general[$key]['price']=$this->currency->format(floor(($page['price_total']*$option_client_percent)/100)); //delete  TODO
+                }
+                $this->data['option_client_percent']=$options_client_percent_general;
+            }else{
+                $this->data['option_client_percent']=null;
+            }
+            $this->data['alter_payment_check'] = $page['alter_payment_check'];
+            $this->data['alter_payment_text'] = $page['alter_payment_text'];
             $this->data['link_pay2pay'] = $page['link_pay2pay'];
             $this->data['link_robokassa'] = $page['link_robokassa'];
             $this->data['link_interkassa'] = $page['link_interkassa'];
@@ -255,7 +365,12 @@ class ControllerInformationPageOrderBobs extends Controller
             $this->response->setOutput($this->render());
         }
     }
-
+    private function getLengthStringUrl($str_desc)
+    {
+        $i = substr_count($str_desc, ' ');
+        $i *= 2; //space %20 - 3
+        return strlen($str_desc) + $i;
+    }
 
 }
 

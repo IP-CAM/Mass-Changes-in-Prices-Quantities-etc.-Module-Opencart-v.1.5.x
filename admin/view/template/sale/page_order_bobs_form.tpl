@@ -147,16 +147,20 @@
                 <tr>
                     <td><span><?php echo $option_client_percent_label; ?></span></td>
                     <td>
-                        <?php for ($i = 10; $i <= 100; $i+=10) { ?>
-                        <p><span>
+                        <a  id="expand_down"></a>
+                        <div id="option_client_percent_block">
+                            <?php for ($i = 10; $i <= 100; $i+=10) { ?>
+                            <p><span>
                                 <?php echo $option_client_percent_default_label; ?>
                             </span>
-                            <input type="radio" name="option_client_percent_default" value="<?php echo $i ?>" <?php if($option_client_percent_default==$i){ ?> checked="checked" <?php } ?> />
-                            <input type="checkbox" name="option_client_percent[]" value="<?php echo $i ?>" <?php
+                                <input type="radio" name="option_client_percent_default" value="<?php echo $i ?>" <?php if($option_client_percent_default==$i){ ?> checked="checked" <?php } ?> />
+                                <input type="checkbox" name="option_client_percent[]" value="<?php echo $i ?>" <?php
                             if($option_client_percent!=null) {
                             if(array_search($i,$option_client_percent)!==false) { ?> checked="checked"<?php } } ?>><?php echo $i ?>%
-                        </p>
-                        <?php } ?>
+                            </p>
+                            <?php } ?>
+                        </div>
+
                     </td>
                 </tr>
                 <?php } ?>
@@ -283,16 +287,23 @@
                     </td>
                 </tr>
             </TABLE>
-            <div>
-                <input type="checkbox" name="sberbank_check" id="sberbank_check"
-                <?php if($sberbank_check) { ?>checked <?php } ?> >
-                <?php echo $name_payment_sberbank_label; ?>
+            <div class="alter_payment_disabled_color">
+                <input type="checkbox"
+                       name="alter_payment_check"
+                       id="alter_payment_check"
+                       class="alter_payment_disabled"
+                <?php if($alter_payment_check) { ?>checked <?php } ?> >
+                <?php echo $alter_payment_label; ?>
             </div>
-            <TABLE class="form sberbank">
+            <TABLE class="form alter_payment">
                 <tr>
-                    <td><?php echo $number_cart_sberbank_label; ?></td>
-                    <td><input type="text" name="sberbank_number_cart"
-                               value="<?php echo $sberbank_number_cart; ?>"/>
+                    <td class="alter_payment_disabled_color"><?php echo $alter_payment_text_label; ?></td>
+                    <td>
+                        <textarea type="text"
+                                  name="alter_payment_text"
+                                  class="alter_payment_disabled"
+                                  style="margin: 0px; width: 450px; height: 50px;"><?php echo $alter_payment_text; ?>
+                        </textarea>
                     </td>
                 </tr>
             </TABLE>
@@ -309,28 +320,50 @@
 
 <script type="text/javascript">
 
-
+    var page_form = <?php echo $page_form; ?>;
     var pay2pay_check = <?php echo $pay2pay_check; ?>;
     var robokassa_check =<?php echo $robokassa_check;?>;
     var interkassa_check =<?php echo $interkassa_check;?>;
+    var alter_payment_check =<?php echo $alter_payment_check;?>;
     var name_page_seo ='<?php echo $name_page_seo ?>';
     var price_new_label='<?php echo $price_new_label ?>';
     var price_label='<?php echo $price_label ?>';
     var price_total='<?php echo $price_total; ?>';
+    var option_client_percent='<?php  $e=($option_client_percent!=null) ? 1 : 0; echo $e; ?>';
     var old_price;
+    var checkFableOptionPercent;
+    var option_client_down_label='<?php echo $option_client_down_label; ?>';
+    var option_client_expand_label='<?php echo $option_client_expand_label; ?>';
     $(document).ready(function () {
+
+        if(!page_form)
+        {
+            $('.alter_payment_disabled').attr('disabled', true);
+            $('.alter_payment_disabled_color').css('color', 'gray');
+
+        }
+        if(option_client_percent==1)
+        {
+            $('#expand_down').text(option_client_down_label);
+            checkFableOptionPercent=true;
+        } else {
+            $('#expand_down').text(option_client_expand_label);
+            $("#option_client_percent_block").fadeOut(0);
+            checkFableOptionPercent=false;
+        }
         $('#path_page_text_full').text($('#page_host').val() + $('[name = "name_page"]:first').val());
 
-
-
         if (!pay2pay_check) {
-            $(".pay2pay").fadeOut(0);
+            $(".pay2pay").fadeOut(1000);
         }
         if (!robokassa_check) {
-            $(".robokassa").fadeOut(0);
+            $(".robokassa").fadeOut(1000);
         }
         if (!interkassa_check) {
-            $(".interkassa").fadeOut(0);
+            $(".interkassa").fadeOut(1000);
+        }
+        if (!alter_payment_check) {
+            $(".alter_payment").fadeOut(1000);
         }
 
         $('#pay2pay_check').change(function () {
@@ -341,6 +374,9 @@
         });
         $('#interkassa_check').change(function () {
             $(".interkassa").fadeToggle();
+        });
+        $('#alter_payment_check').change(function () {
+            $(".alter_payment").fadeToggle();
         });
 
 
@@ -464,7 +500,18 @@
                 }
         );
 
+        $('#expand_down').click(function() {
+            if(checkFableOptionPercent) {
+                $("#option_client_percent_block").fadeOut(300);
+                $('#expand_down').text(option_client_expand_label);
+                checkFableOptionPercent=false;
+            } else {
+                $("#option_client_percent_block").fadeIn(300);
+                $('#expand_down').text(option_client_down_label);
+                checkFableOptionPercent=true;
+            }
 
+        });
 
     });
 

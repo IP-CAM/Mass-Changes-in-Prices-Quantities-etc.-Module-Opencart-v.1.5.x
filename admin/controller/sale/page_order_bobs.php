@@ -16,7 +16,7 @@ class ControllerSalePageOrderBobs extends Controller
         }
         $percent = substr($this->request->post['percent'], 0, -1);
         $price = $this->request->post['price'] * $percent / 100;
-        $json['price'] = $price;
+        $json['price'] = floor($price); //delete  TODO
         $prefix_damp = $this->currency->format(1000);
         $prefix = mb_substr($prefix_damp, -2, 2, 'UTF-8'); //p.
         $pattern = '/' . $this->language->get('per_cent_of_all_description_text') . '.*%, ' . mb_strtolower($this->language->get('price_new_label'), 'UTF-8') . '.*' . $prefix . '/';
@@ -32,7 +32,7 @@ class ControllerSalePageOrderBobs extends Controller
                 $patterns[1] = '/' . mb_strtolower($this->language->get('price_new_label'), 'UTF-8') . '.*' . $prefix . '/';
                 $replace = array();
                 $replace[0] = $this->language->get('per_cent_of_all_description_text') . ' ' . $this->request->post['percent'];
-                $replace[1] = mb_strtolower($this->language->get('price_new_label'), 'UTF-8') . ' ' . $this->currency->format($price);
+                $replace[1] = mb_strtolower($this->language->get('price_new_label'), 'UTF-8') . ' ' . $this->currency->format(floor($price)); //delete  TODO
                 $json['description_order'] = preg_replace($patterns, $replace, $text);
             }
         } else {
@@ -263,7 +263,7 @@ class ControllerSalePageOrderBobs extends Controller
             'limit' => $this->config->get('config_admin_limit')
         );
 
-        $order_page_total = $this->model_sale_page_order_bobs->getTotalOrderPageCount();
+        $page_order_total = $this->model_sale_page_order_bobs->getTotalOrderPageCount();
 
         $results = $this->model_sale_page_order_bobs->getPagesOrder($data);
 
@@ -357,7 +357,7 @@ class ControllerSalePageOrderBobs extends Controller
 
         //Показано с 1 по 4 из 4 (всего страниц: 1)
         $pagination = new Pagination();
-        $pagination->total = $order_page_total;
+        $pagination->total = $page_order_total;
         $pagination->page = $page;
         $pagination->limit = $this->config->get('config_admin_limit');
         $pagination->text = $this->language->get('text_pagination');
@@ -394,7 +394,7 @@ class ControllerSalePageOrderBobs extends Controller
             'separator' => ' :: '
         );
 
-        $this->data['page_form'] = $page_form;
+        $this->data['page_form'] = (int)$page_form;
 
 
         //Названия полей и значения по умолчанию
@@ -423,7 +423,8 @@ class ControllerSalePageOrderBobs extends Controller
         $this->data['price_new_label'] = $this->language->get('price_new_label');
         $this->data['option_client_percent_label'] = $this->language->get('option_client_percent_label');
         $this->data['option_client_percent_default_label'] = $this->language->get('option_client_percent_default_label');
-
+        $this->data['option_client_expand_label'] = $this->language->get('option_client_expand_label');
+        $this->data['option_client_down_label'] = $this->language->get('option_client_down_label');
 
         $this->data['receiver_of_product_label'] = $this->language->get('receiver_of_product');
         $this->data['description_order_label'] = $this->language->get('description_order');
@@ -449,6 +450,10 @@ class ControllerSalePageOrderBobs extends Controller
         $this->data['identifier_shop_interkassa_label'] = $this->language->get('identifier_shop_interkassa');
         $this->data['test_mode_interkassa_label'] = $this->language->get('test_mode_interkassa_label');
 
+        //alter payment
+        $this->data['alter_payment_label'] = $this->language->get('alter_payment_label');
+        $this->data['alter_payment_text_label'] = $this->language->get('alter_payment_text_label');
+
         $this->data['create_a_page_label'] = $this->language->get('create_a_page');
         $this->data['change_name_page_label'] = $this->language->get('change_name_page_label');
         $this->data['name_page_label'] = $this->language->get('name_page');
@@ -462,13 +467,13 @@ class ControllerSalePageOrderBobs extends Controller
         $this->data['page_host'] = 'http://' . $_SERVER['HTTP_HOST'] . '/'; //Name site
 
 
-        $order_page_parameters = $this->model_sale_page_order_bobs->getParameters();//Get parameters
-        if ($order_page_parameters['get_order_id'] === null) {
-            $order_page_parameters['get_order_id'] = '';
+        $page_order_parameters = $this->model_sale_page_order_bobs->getParameters();//Get parameters
+        if ($page_order_parameters['get_order_id'] === null) {
+            $page_order_parameters['get_order_id'] = '';
         }
         $this->data['name_page_seo'] = $this->name_page_seo;
         if (sizeof($array_post_parameter)) {
-            $this->data['get_order_id'] = $order_page_parameters['get_order_id'];
+            $this->data['get_order_id'] = $page_order_parameters['get_order_id'];
             $this->data['order_id'] = $array_post_parameter['order_id'];
             $this->data['language_id'] = $array_post_parameter['language_id'];
             $this->data['currency_code'] = $array_post_parameter['currency_code'];
@@ -479,13 +484,24 @@ class ControllerSalePageOrderBobs extends Controller
             if ($array_post_parameter['price_total'] != $array_post_parameter['price']) {
                 $this->data['price_total_text'] = $this->language->get('price_total_text') . ' ' . $this->currency->format($array_post_parameter['price_total']);
             }
-            $this->data['option_client_percent_default'] =
-                ($array_post_parameter['option_client_percent_default'] != null) ?
-                    $array_post_parameter['option_client_percent_default'] : 10;
-            $this->data['option_client_percent'] =
-                ($array_post_parameter['option_client_percent'] != null) ?
-                    unserialize($array_post_parameter['option_client_percent']) :
-                    $array_post_parameter['option_client_percent'];
+            if ($page_form) {
+                $this->data['option_client_percent_default'] =
+                    ($array_post_parameter['option_client_percent_default'] != null) ?
+                        $array_post_parameter['option_client_percent_default'] : 10;
+                $this->data['option_client_percent'] =
+                    ($array_post_parameter['option_client_percent'] != null) ?
+                        unserialize($array_post_parameter['option_client_percent']) :
+                        $array_post_parameter['option_client_percent'];
+            } else {
+                $this->data['option_client_percent_default'] =
+                    ($page_order_parameters['option_client_percent_default'] != null) ?
+                        $page_order_parameters['option_client_percent_default'] : 10;
+
+                $this->data['option_client_percent'] =
+                    ($page_order_parameters['option_client_percent'] != null) ?
+                        unserialize($page_order_parameters['option_client_percent']) :
+                        $page_order_parameters['option_client_percent'];
+            }
             $this->data['receiver_of_product'] = $array_post_parameter['receiver_of_product'];
             $this->data['description_order'] = $array_post_parameter['description_order'];
             $this->data['delivery_address'] = $array_post_parameter['delivery_address'];
@@ -509,6 +525,13 @@ class ControllerSalePageOrderBobs extends Controller
             $this->data['interkassa_check'] = $array_post_parameter['interkassa_check'];
             $this->data['interkassa_identifier_shop'] = $array_post_parameter['interkassa_identifier_shop'];
             $this->data['interkassa_test_mode'] = $array_post_parameter['interkassa_test_mode'];
+            if ($page_form) {
+                $this->data['alter_payment_check'] = $array_post_parameter['alter_payment_check'];
+                $this->data['alter_payment_text'] = $array_post_parameter['alter_payment_text'];
+            } else {
+                $this->data['alter_payment_check'] = $page_order_parameters['alter_payment_check'];
+                $this->data['alter_payment_text'] = $page_order_parameters['alter_payment_text'];
+            }
 
             if ($page_form) {
                 $this->data['name_page'] = $array_post_parameter['name_page'];
@@ -535,13 +558,13 @@ class ControllerSalePageOrderBobs extends Controller
             $this->data['per_cent_of_all'] = '100';
 
             $this->data['option_client_percent_default'] =
-                ($order_page_parameters['option_client_percent_default'] != null) ?
-                    $order_page_parameters['option_client_percent_default'] : 10;
+                ($page_order_parameters['option_client_percent_default'] != null) ?
+                    $page_order_parameters['option_client_percent_default'] : 10;
 
             $this->data['option_client_percent'] =
-                ($order_page_parameters['option_client_percent'] != null) ?
-                    unserialize($order_page_parameters['option_client_percent']) :
-                    $order_page_parameters['option_client_percent'];
+                ($page_order_parameters['option_client_percent'] != null &&
+                    $page_order_parameters['option_client_percent'] != '') ?
+                    unserialize($page_order_parameters['option_client_percent']) : null;
 
             $this->data['receiver_of_product'] = 'Вася Пупкин';
             $this->data['description_order'] = 'описание заказа';
@@ -549,22 +572,24 @@ class ControllerSalePageOrderBobs extends Controller
             $this->data['delivery_method'] = '';
             $this->data['notes'] = '';
 
-            $this->data['currency_code_check'] = $order_page_parameters['currency_code_check'];
+            $this->data['currency_code_check'] = $page_order_parameters['currency_code_check'];
 
-            $this->data['pay2pay_check'] = $order_page_parameters['pay2pay_check'];
-            $this->data['pay2pay_identifier_shop'] = $order_page_parameters['pay2pay_identifier_shop'];
-            $this->data['pay2pay_key_secret'] = $order_page_parameters['pay2pay_key_secret'];
-            $this->data['pay2pay_test_mode'] = $order_page_parameters['pay2pay_test_mode'];
+            $this->data['pay2pay_check'] = $page_order_parameters['pay2pay_check'];
+            $this->data['pay2pay_identifier_shop'] = $page_order_parameters['pay2pay_identifier_shop'];
+            $this->data['pay2pay_key_secret'] = $page_order_parameters['pay2pay_key_secret'];
+            $this->data['pay2pay_test_mode'] = $page_order_parameters['pay2pay_test_mode'];
 
-            $this->data['robokassa_check'] = $order_page_parameters['robokassa_check'];
-            $this->data['robokassa_identifier_shop'] = $order_page_parameters['robokassa_identifier_shop'];
-            $this->data['robokassa_key_secret'] = $order_page_parameters['robokassa_key_secret'];
-            $this->data['robokassa_test_mode'] = $order_page_parameters['robokassa_test_mode'];
+            $this->data['robokassa_check'] = $page_order_parameters['robokassa_check'];
+            $this->data['robokassa_identifier_shop'] = $page_order_parameters['robokassa_identifier_shop'];
+            $this->data['robokassa_key_secret'] = $page_order_parameters['robokassa_key_secret'];
+            $this->data['robokassa_test_mode'] = $page_order_parameters['robokassa_test_mode'];
 
-            $this->data['interkassa_check'] = $order_page_parameters['interkassa_check'];
-            $this->data['interkassa_identifier_shop'] = $order_page_parameters['interkassa_identifier_shop'];
-            $this->data['interkassa_test_mode'] = $order_page_parameters['interkassa_test_mode'];
+            $this->data['interkassa_check'] = $page_order_parameters['interkassa_check'];
+            $this->data['interkassa_identifier_shop'] = $page_order_parameters['interkassa_identifier_shop'];
+            $this->data['interkassa_test_mode'] = $page_order_parameters['interkassa_test_mode'];
 
+            $this->data['alter_payment_check'] = $page_order_parameters['alter_payment_check'];
+            $this->data['alter_payment_text'] = $page_order_parameters['alter_payment_text'];
 
             $this->data['name_page'] = sprintf($this->name_page_seo, $this->data['order_id']);
 
@@ -916,6 +941,11 @@ class ControllerSalePageOrderBobs extends Controller
             $array_post_parameter['interkassa_check'] = 0;
         }
 
+        if (isset($array_post_parameter['alter_payment_check'])) {
+            $array_post_parameter['alter_payment_check'] = 1;
+        } else {
+            $array_post_parameter['alter_payment_check'] = 0;
+        }
 
         //Percent
         switch ($array_post_parameter['per_cent_of_all']) {

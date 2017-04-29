@@ -12,6 +12,8 @@ $_['column_total'] = 'Итого';
 $_['total_all_label'] = 'Итого, общая сумма:';
 
 $_['title'] = 'Оплата заказа №';
+$_['option_client_percent_label'] = 'Выберите процент предоплаты';
+$_['percent_label'] = 'Предоплата';
 $_['list_payment'] = 'Выберите способ оплаты';
 
 $_['link_pay2pay_label'] = 'Pay2Pay';

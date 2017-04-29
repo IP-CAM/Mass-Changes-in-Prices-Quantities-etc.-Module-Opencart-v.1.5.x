@@ -30,6 +30,8 @@ $_['price_total_text']       	  = 'Общая стоймость заказа';
 $_['per_cent_of_all_description_text']       	  = 'Предоплата';
 
 $_['option_client_percent_label']       	  = 'Дать возможность выбора процента оплаты клиенту';
+$_['option_client_down_label']       	  = 'Свернуть';
+$_['option_client_expand_label']       	  = 'Развернуть';
 $_['option_client_percent_default_label']       	  = 'По умолчанию';
 
 $_['description_order']       	  = 'Описание заказа';
@@ -55,6 +57,10 @@ $_['test_mode_robokassa_label']       	  = 'Тестовый режим';
 $_['name_payment_interkassa']       	  = 'Оплата через Interkassa';
 $_['identifier_shop_interkassa']       	  = 'Идентификатор магазина';
 $_['test_mode_interkassa_label']       	  = 'Тестовый режим';
+
+$_['alter_payment_label'] = 'Оплата через карту (или любой другой вариант оплаты)';
+$_['alter_payment_text_label'] = 'Текст для пользователя';
+
 
 
 

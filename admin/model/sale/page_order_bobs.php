@@ -5,45 +5,32 @@ class ModelSalePageOrderBobs extends Model
 
     public function setParameters($array_post_parameter)
     {
-        if ($array_post_parameter['get_order_id'] == '') {
-            $sql = "UPDATE `" . DB_PREFIX . "page_order_bobs_parameters` SET
-            `parameters_id` = '1', " .
-                "`get_order_id` = null, " .
-                "`currency_code_check` = '" . (int)$array_post_parameter['currency_code_check'] . "', " .
-                "`option_client_percent_default` = " . (int)$array_post_parameter['option_client_percent_default'] . ", " .
-                "`option_client_percent` = '" . $this->db->escape($array_post_parameter['option_client_percent']) . "', " .
-                "`pay2pay_check` = '" . (int)$array_post_parameter['pay2pay_check'] . "', " .
-                "`pay2pay_identifier_shop` = '" . $this->db->escape($array_post_parameter['pay2pay_identifier_shop']) . "', " .
-                "`pay2pay_key_secret` = '" . $this->db->escape($array_post_parameter['pay2pay_key_secret']) . "', " .
-                "`pay2pay_test_mode` = " . (int)$array_post_parameter['pay2pay_test_mode'] . ", " .
-                "`robokassa_check` = '" . (int)$array_post_parameter['robokassa_check'] . "', " .
-                "`robokassa_identifier_shop` = '" . $this->db->escape($array_post_parameter['robokassa_identifier_shop']) . "', " .
-                "`robokassa_key_secret` = '" . $this->db->escape($array_post_parameter['robokassa_key_secret']) . "', " .
-                "`robokassa_test_mode` = " . (int)$array_post_parameter['robokassa_test_mode'] . ", " .
-                "`interkassa_check` = '" . (int)$array_post_parameter['interkassa_check'] . "', " .
-                "`interkassa_identifier_shop` = '" . $this->db->escape($array_post_parameter['interkassa_identifier_shop']) . "', " .
-                "`interkassa_test_mode` = " . (int)$array_post_parameter['interkassa_test_mode'] . " WHERE ".
-                "`parameters_id` ='1'";
-        } else {
-            $sql = "UPDATE `" . DB_PREFIX . "page_order_bobs_parameters` SET
-                `parameters_id` = '1', " .
-                "`get_order_id` = '" . (int)$array_post_parameter['get_order_id'] . "', " .
-                "`currency_code_check` = '" . (int)$array_post_parameter['currency_code_check'] . "', " .
-                "`option_client_percent_default` = " . (int)$array_post_parameter['option_client_percent_default'] . ", " .
-                "`option_client_percent` = '" . $this->db->escape($array_post_parameter['option_client_percent']) . "', " .
-                "`pay2pay_check` = '" . (int)$array_post_parameter['pay2pay_check'] . "', " .
-                "`pay2pay_identifier_shop` = '" . $this->db->escape($array_post_parameter['pay2pay_identifier_shop']) . "', " .
-                "`pay2pay_key_secret` = '" . $this->db->escape($array_post_parameter['pay2pay_key_secret']) . "', " .
-                "`pay2pay_test_mode` = '" . (int)$array_post_parameter['pay2pay_test_mode'] . "', " .
-                "`robokassa_check` = '" . (int)$array_post_parameter['robokassa_check'] . "', " .
-                "`robokassa_identifier_shop` = '" . $this->db->escape($array_post_parameter['robokassa_identifier_shop']) . "', " .
-                "`robokassa_key_secret` = '" . $this->db->escape($array_post_parameter['robokassa_key_secret']) . "', " .
-                "`robokassa_test_mode` = " . (int)$array_post_parameter['robokassa_test_mode'] . ", " .
-                "`interkassa_check` = '" . (int)$array_post_parameter['interkassa_check'] . "', " .
-                "`interkassa_identifier_shop` = '" . $this->db->escape($array_post_parameter['interkassa_identifier_shop']) . "', " .
-                "`interkassa_test_mode` = " . (int)$array_post_parameter['interkassa_test_mode'] . " WHERE ".
-                "`parameters_id` ='1'";
+
+        $get_order_id=null;
+        if ($array_post_parameter['get_order_id'] != '') {
+            $get_order_id=$array_post_parameter['get_order_id'];
         }
+        $sql = "UPDATE `" . DB_PREFIX . "page_order_bobs_parameters` SET
+                `parameters_id` = '1', " .
+            "`get_order_id` = " . (int)$get_order_id . ", " .
+            "`currency_code_check` = '" . (int)$array_post_parameter['currency_code_check'] . "', " .
+            "`option_client_percent_default` = " . (int)$array_post_parameter['option_client_percent_default'] . ", " .
+            "`option_client_percent` = '" . $this->db->escape($array_post_parameter['option_client_percent']) . "', " .
+            "`pay2pay_check` = '" . (int)$array_post_parameter['pay2pay_check'] . "', " .
+            "`pay2pay_identifier_shop` = '" . $this->db->escape($array_post_parameter['pay2pay_identifier_shop']) . "', " .
+            "`pay2pay_key_secret` = '" . $this->db->escape($array_post_parameter['pay2pay_key_secret']) . "', " .
+            "`pay2pay_test_mode` = '" . (int)$array_post_parameter['pay2pay_test_mode'] . "', " .
+            "`robokassa_check` = '" . (int)$array_post_parameter['robokassa_check'] . "', " .
+            "`robokassa_identifier_shop` = '" . $this->db->escape($array_post_parameter['robokassa_identifier_shop']) . "', " .
+            "`robokassa_key_secret` = '" . $this->db->escape($array_post_parameter['robokassa_key_secret']) . "', " .
+            "`robokassa_test_mode` = " . (int)$array_post_parameter['robokassa_test_mode'] . ", " .
+            "`interkassa_check` = '" . (int)$array_post_parameter['interkassa_check'] . "', " .
+            "`interkassa_identifier_shop` = '" . $this->db->escape($array_post_parameter['interkassa_identifier_shop']) . "', " .
+            "`interkassa_test_mode` = " . (int)$array_post_parameter['interkassa_test_mode'] . ", " .
+            "`alter_payment_check` = ".(int)$array_post_parameter['alter_payment_check'] . ", " .
+            "`alter_payment_text` = '" . $this->db->escape($array_post_parameter['alter_payment_text']) . "' " .
+            " WHERE `parameters_id` =1";
+
         $this->db->query($sql); //Create datbase line
     }
 
@@ -309,6 +296,8 @@ class ModelSalePageOrderBobs extends Model
         `interkassa_check`,
         `interkassa_identifier_shop`,
         `interkassa_test_mode`,
+        `alter_payment_check`,
+        `alter_payment_text`,
         `link_pay2pay`,
         `link_robokassa`,
         `link_interkassa`
@@ -329,8 +318,8 @@ class ModelSalePageOrderBobs extends Model
             $this->db->escape($array_post_parameter['description_order']) . "', '" .
             $this->db->escape($array_post_parameter['delivery_address']) . "', '" .
             $this->db->escape($array_post_parameter['delivery_method']) . "', '" .
-            $this->db->escape($array_post_parameter['notes']) . "', '" .
-            $this->db->escape($array_post_parameter['pay2pay_check']) . "', '" .
+            $this->db->escape($array_post_parameter['notes']) . "', " .
+            $this->db->escape($array_post_parameter['pay2pay_check']) . ", '" .
             $this->db->escape($array_post_parameter['pay2pay_identifier_shop']) . "', '" .
             $this->db->escape($array_post_parameter['pay2pay_key_secret']) . "', '" .
             $this->db->escape($array_post_parameter['pay2pay_test_mode']) . "', '" .
@@ -340,7 +329,9 @@ class ModelSalePageOrderBobs extends Model
             $this->db->escape($array_post_parameter['robokassa_test_mode']) . ", '" .
             $this->db->escape($array_post_parameter['interkassa_check']) . "', '" .
             $this->db->escape($array_post_parameter['interkassa_identifier_shop']) . "', " .
-            $this->db->escape($array_post_parameter['interkassa_test_mode']) . ", '" .
+            $this->db->escape($array_post_parameter['interkassa_test_mode']) . ", " .
+            $this->db->escape($array_post_parameter['alter_payment_check']) . ", '" .
+            $this->db->escape($array_post_parameter['alter_payment_text']) . "', '" .
             $this->db->escape($array_post_parameter['link_pay2pay']) . "', '" .
             $this->db->escape($array_post_parameter['link_robokassa']) . "', '" .
             $this->db->escape($array_post_parameter['link_interkassa']) . "')";

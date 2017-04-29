@@ -91,6 +91,8 @@ class ControllerModulePageOrderBobs extends Controller
       `interkassa_check` TINYINT(1) NOT NULL ,
       `interkassa_identifier_shop` VARCHAR(63) NOT NULL ,
       `interkassa_test_mode` TINYINT(1) NOT NULL ,
+      `alter_payment_check` TINYINT(1) NOT NULL ,
+      `alter_payment_text` TEXT NOT NULL ,
       `link_pay2pay` TEXT NOT NULL ,
       `link_robokassa` TEXT NOT NULL ,
       `link_interkassa` TEXT NOT NULL ,
@@ -115,7 +117,9 @@ class ControllerModulePageOrderBobs extends Controller
     `robokassa_test_mode` TINYINT(1) NOT NULL ,
     `interkassa_check` TINYINT(1) NOT NULL ,
     `interkassa_identifier_shop` VARCHAR(63) NOT NULL ,
-    `interkassa_test_mode` TINYINT(1) NOT NULL)
+    `interkassa_test_mode` TINYINT(1) NOT NULL ,
+    `alter_payment_check` TINYINT(1) NOT NULL ,
+    `alter_payment_text` TEXT NOT NULL)
      ENGINE  =  MyISAM  DEFAULT CHARSET  = utf8";
         $this->db->query($sql);
 
@@ -136,13 +140,16 @@ class ControllerModulePageOrderBobs extends Controller
             `robokassa_test_mode` = 1,
             `interkassa_check` = 1,
             `interkassa_identifier_shop` = '54e32cdc76a3247a198b4567',
-            `interkassa_test_mode` = 1";
+            `interkassa_test_mode` = 1,
+            `alter_payment_check` = 1,
+            `alter_payment_text` = 'Оплатить с помощью прямого перевода на карту СберБанка 0000-0000-0000-0000 Андрей С.'";
         //$this->data['success'] = $this->language->get('success_installation');
         $this->db->query($sql); //Create datbase line
         $this->load->model('setting/setting');
         $msettings = array('page_order_bobs'=>array('update_quantity'=>1,'update_options'=>1,'page_order_bobs_version'=>'1.0'));
         $this->model_setting_setting->editSetting('page_order_bobs', $msettings);
         $this->session->data['success'] = $this->language->get('success_installation');
+
     }
 
     public function uninstall()
@@ -150,9 +157,9 @@ class ControllerModulePageOrderBobs extends Controller
 
         $this->db->query("DELETE FROM " . DB_PREFIX . "url_alias WHERE query LIKE 'page_order_bobs_id%'");
         $this->db->query("DROP TABLE IF EXISTS
-			`" . DB_PREFIX . "order_page_bobs`,
-			`" . DB_PREFIX . "order_page_bobs_description`,
-			`" . DB_PREFIX . "order_page_bobs_parameters`");
+			`" . DB_PREFIX . "page_order_bobs`,
+			`" . DB_PREFIX . "page_order_bobs_description`,
+			`" . DB_PREFIX . "page_order_bobs_parameters`");
 
     }
 

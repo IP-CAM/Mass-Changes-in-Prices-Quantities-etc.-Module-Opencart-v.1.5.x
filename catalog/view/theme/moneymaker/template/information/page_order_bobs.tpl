@@ -110,17 +110,32 @@
                     <p id="description"><?php echo $description_order; ?></p>
                     <?php } ?>
                     <?php } ?>
-
+                    <?php if(isset($option_client_percent)) { ?>
+                    <h3><?php echo $option_client_percent_label ?></h3>
+                    <div style="padding-left: 15px;">
+                        <?php foreach ($option_client_percent as $client_percent) { ?>
+                            <span id="option_client_percent">
+                                <input type="radio" name="option_client_percent" value="<?php echo $client_percent['percent'] ?>"
+                                <?php if($option_client_percent_default==$client_percent['percent']){
+                                ?> checked="checked" <?php } ?> />
+                                <?php echo $client_percent['percent'] ?>% - <?php echo $client_percent['price']?>
+                            </span>
+                        <?php } ?>
+                    </div>
+                    <?php } ?>
                     <h3><?php echo $list_payment; ?></h3>
                     <ul>
+                        <?php if(!empty($alter_payment_check)) { ?>
+                        <li><?php echo $alter_payment_text; ?></a></li>
+                        <?php } ?>
                         <?php if(!empty($link_pay2pay)) { ?>
-                        <li><a target="_blank" href="<?php echo $link_pay2pay; ?>"><?php echo $link_pay2pay_label; ?></a></li>
+                        <li><a id="link_pay2pay" target="_blank" href="<?php echo $link_pay2pay; ?>"><?php echo $link_pay2pay_label; ?></a></li>
                         <?php } ?>
                         <?php if(!empty($link_robokassa)) { ?>
-                        <li><a target="_blank" href="<?php echo $link_robokassa; ?>"><?php echo $link_robokassa_label; ?></a></li>
+                        <li><a id="link_robokassa" target="_blank" href="<?php echo $link_robokassa; ?>"><?php echo $link_robokassa_label; ?></a></li>
                         <?php } ?>
                         <?php if(!empty($link_interkassa)) { ?>
-                        <li><a target="_blank" href="<?php echo $link_interkassa; ?>"><?php echo $link_interkassa_label; ?></a></li>
+                        <li><a id="link_interkassa" target="_blank" href="<?php echo $link_interkassa; ?>"><?php echo $link_interkassa_label; ?></a></li>
                         <?php } ?>
                     </ul>
 
@@ -187,4 +202,35 @@
         </div>
     </div>
 </div>
+<input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
 <?php echo $footer; ?>
+<script type="text/javascript"><!--
+    $(document).ready(function () {
+        getPercentOption();
+        $('[name = "option_client_percent"]').bind('change',function() {
+            getPercentOption();
+        });
+
+    });
+function getPercentOption() {
+    $.ajax({
+        url: 'index.php?route=information/page_order_bobs/post',
+        dataType: 'json',
+        data: 'percent=' + $("[name = 'option_client_percent']").filter(':checked').val()+'&order_id='+
+        $('[name = "order_id"]').val(),
+        type:'post',
+        beforeSend: function(){
+            $('#link_pay2pay').addClass('link_disabled'); //link_disabled
+            $('#link_robokassa').addClass('link_disabled'); //link_disabled
+            $('#link_interkassa').addClass('link_disabled'); //link_disabled
+
+        },
+        success: function(json){
+            // Здесь мы получаем данные, отправленные сервером и выводим их на экран.
+            $('#link_pay2pay').attr("href", json.link_pay2pay).removeClass('link_disabled');
+            $('#link_robokassa').attr("href", json.link_robokassa).removeClass('link_disabled');
+            $('#link_interkassa').attr("href", json.link_interkassa).removeClass('link_disabled');
+        }
+    });
+}
+//--></script>
