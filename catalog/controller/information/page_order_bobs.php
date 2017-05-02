@@ -367,6 +367,7 @@ class ControllerInformationPageOrderBobs extends Controller
     }
     private function getLengthStringUrl($str_desc)
     {
+
         $i = mb_substr_count($str_desc, ' ');
         $i *= 2; //space %20 - 3
         return utf8_strlen($str_desc) + $i;
