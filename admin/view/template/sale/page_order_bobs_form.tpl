@@ -287,21 +287,20 @@
                     </td>
                 </tr>
             </TABLE>
-            <div class="alter_payment_disabled_color">
+
+            <div <?php if(!$page_form) { echo 'hidden'; } ?>>
                 <input type="checkbox"
                        name="alter_payment_check"
                        id="alter_payment_check"
-                       class="alter_payment_disabled"
                 <?php if($alter_payment_check) { ?>checked <?php } ?> >
                 <?php echo $alter_payment_label; ?>
             </div>
-            <TABLE class="form alter_payment">
+            <TABLE class="form alter_payment" <?php if(!$page_form) { echo 'hidden'; } ?> >
                 <tr>
-                    <td class="alter_payment_disabled_color"><?php echo $alter_payment_text_label; ?></td>
+                    <td><?php echo $alter_payment_text_label; ?></td>
                     <td>
                         <textarea type="text"
                                   name="alter_payment_text"
-                                  class="alter_payment_disabled"
                                   style="margin: 0px; width: 450px; height: 50px;"><?php echo $alter_payment_text; ?>
                         </textarea>
                     </td>
@@ -335,13 +334,6 @@
     var option_client_down_label='<?php echo $option_client_down_label; ?>';
     var option_client_expand_label='<?php echo $option_client_expand_label; ?>';
     $(document).ready(function () {
-
-        if(!page_form)
-        {
-            $('.alter_payment_disabled').attr('disabled', true);
-            $('.alter_payment_disabled_color').css('color', 'gray');
-
-        }
         if(option_client_percent==1)
         {
             $('#expand_down').text(option_client_down_label);

@@ -34,7 +34,7 @@ class ControllerInformationPageOrderBobs extends Controller
 
         $description_order = (string)$page['description_order'];
         $description_order.=' '.$percent_label.' '.$percent.'%';  //update
-        if (isset($page['pay2pay_check'])) {
+        if ($page['pay2pay_check']) {
             $identifier_order = $page['pay2pay_identifier_shop'];
             $test_mode = $page['pay2pay_test_mode'];
             $key_secret = $page['pay2pay_key_secret'];
@@ -62,7 +62,7 @@ class ControllerInformationPageOrderBobs extends Controller
 
             $linkPay2pay = 'https://merchant.pay2pay.com/?page=init' . "&xml=" . $xml . "&sign=" . $sign;
         }
-        if (isset($page['robokassa_check'])) {
+        if ($page['robokassa_check']) {
             $robokassa_identifier_shop = $page['robokassa_identifier_shop'];
             $robokassa_key_secret = $page['robokassa_key_secret'];
             $robokassa_test_mode = $page['robokassa_test_mode'];
@@ -76,11 +76,11 @@ class ControllerInformationPageOrderBobs extends Controller
 
         }
 
-        if (isset($page['interkassa_check'])) //interkassa
+        if ($page['interkassa_check']) //interkassa
         {
             $description_order_interkassa = $description_order;
             while ($this->getLengthStringUrl($description_order_interkassa) > 210) {
-                $description_order_interkassa = substr($description_order_interkassa, 0, -5);
+                $description_order_interkassa = utf8_substr($description_order_interkassa, 0, -5);
             }
 
             $identifier_order = $page['interkassa_identifier_shop'];
@@ -367,9 +367,9 @@ class ControllerInformationPageOrderBobs extends Controller
     }
     private function getLengthStringUrl($str_desc)
     {
-        $i = substr_count($str_desc, ' ');
+        $i = mb_substr_count($str_desc, ' ');
         $i *= 2; //space %20 - 3
-        return strlen($str_desc) + $i;
+        return utf8_strlen($str_desc) + $i;
     }
 
 }

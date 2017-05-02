@@ -227,9 +227,25 @@ function getPercentOption() {
         },
         success: function(json){
             // Здесь мы получаем данные, отправленные сервером и выводим их на экран.
-            $('#link_pay2pay').attr("href", json.link_pay2pay).removeClass('link_disabled');
-            $('#link_robokassa').attr("href", json.link_robokassa).removeClass('link_disabled');
-            $('#link_interkassa').attr("href", json.link_interkassa).removeClass('link_disabled');
+            if(json.link_pay2pay!== undefined)
+            {
+                alert('edas');
+                $('#link_pay2pay').removeClass('link_disabled').attr("href", json.link_pay2pay);
+            }
+            if(json.link_robokassa!== undefined)
+            {
+                alert('edas');
+                $('#link_robokassa').removeClass('link_disabled').attr("href", json.link_robokassa);
+            }
+            if(json.link_interkassa!== undefined)
+            {
+                alert('edas');
+                $('#link_interkassa').removeClass('link_disabled').attr("href", json.link_interkassa);
+            }
+
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
         }
     });
 }
