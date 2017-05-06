@@ -188,7 +188,7 @@
                  <!--   <div class="row pagination_buttons">
                         <div class="col-xs-12 text-center">
                             <p><a class="btn btn-lg btn-primary"
-                                  href="<?php echo $continue; ?>"><?php echo $button_continue; ?></a></p>
+                            href="<?php echo $continue; ?>"><?php echo $button_continue; ?></a></p>
                         </div>
                     </div> -->
                     <p><?php echo $footer_label;?>

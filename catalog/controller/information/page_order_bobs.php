@@ -362,7 +362,6 @@ class ControllerInformationPageOrderBobs extends Controller
                 'common/footer',
                 'common/header'
             );
-
             $this->response->setOutput($this->render());
         }
     }
