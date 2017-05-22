@@ -93,11 +93,16 @@ class ControllerModulePageOrderBobs extends Controller
       `interkassa_test_mode` TINYINT(1) NOT NULL ,
       `alter_payment_check` TINYINT(1) NOT NULL ,
       `alter_payment_text` TEXT NOT NULL ,
-      `link_pay2pay` TEXT NOT NULL ,
-      `link_robokassa` TEXT NOT NULL ,
-      `link_interkassa` TEXT NOT NULL ,
       PRIMARY KEY (`page_id`))
       ENGINE  =  MyISAM  DEFAULT CHARSET  = utf8";
+        $this->db->query($sql);
+
+        $sql = "CREATE TABLE IF NOT EXISTS  `" . DB_PREFIX . "page_order_bobs_links`
+      ( `page_id` INT(11) NOT NULL ,
+      `percent`INT(11) NOT NULL ,
+      `type` VARCHAR(255) NOT NULL ,
+      `link` TEXT NOT NULL)
+       ENGINE  =  MyISAM  DEFAULT CHARSET  = utf8";
         $this->db->query($sql);
 
 
@@ -155,11 +160,12 @@ class ControllerModulePageOrderBobs extends Controller
     public function uninstall()
     {
 
-        $this->db->query("DELETE FROM " . DB_PREFIX . "url_alias WHERE query LIKE 'page_order_bobs_id%'");
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "url_alias` WHERE query LIKE 'page_order_bobs_id%'");
         $this->db->query("DROP TABLE IF EXISTS
 			`" . DB_PREFIX . "page_order_bobs`,
 			`" . DB_PREFIX . "page_order_bobs_description`,
-			`" . DB_PREFIX . "page_order_bobs_parameters`");
+			`" . DB_PREFIX . "page_order_bobs_parameters`,
+			`" . DB_PREFIX . "page_order_bobs_links`");
 
     }
 

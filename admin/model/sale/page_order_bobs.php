@@ -6,9 +6,9 @@ class ModelSalePageOrderBobs extends Model
     public function setParameters($array_post_parameter)
     {
 
-        $get_order_id=null;
+        $get_order_id = null;
         if ($array_post_parameter['get_order_id'] != '') {
-            $get_order_id=$array_post_parameter['get_order_id'];
+            $get_order_id = $array_post_parameter['get_order_id'];
         }
         $sql = "UPDATE `" . DB_PREFIX . "page_order_bobs_parameters` SET
                 `parameters_id` = '1', " .
@@ -27,7 +27,7 @@ class ModelSalePageOrderBobs extends Model
             "`interkassa_check` = '" . (int)$array_post_parameter['interkassa_check'] . "', " .
             "`interkassa_identifier_shop` = '" . $this->db->escape($array_post_parameter['interkassa_identifier_shop']) . "', " .
             "`interkassa_test_mode` = " . (int)$array_post_parameter['interkassa_test_mode'] . ", " .
-            "`alter_payment_check` = ".(int)$array_post_parameter['alter_payment_check'] . ", " .
+            "`alter_payment_check` = " . (int)$array_post_parameter['alter_payment_check'] . ", " .
             "`alter_payment_text` = '" . $this->db->escape($array_post_parameter['alter_payment_text']) . "' " .
             " WHERE `parameters_id` =1";
 
@@ -119,8 +119,8 @@ class ModelSalePageOrderBobs extends Model
         $page_id = (int)$max_id + 1; //following line
 
         $sql = "REPLACE INTO `" . DB_PREFIX . "page_order_bobs`
-        (`page_id`, `bottom`, `status`, `store_id`) VALUES (".
-        (int)$page_id.", 0, 1, 0)";
+        (`page_id`, `bottom`, `status`, `store_id`) VALUES (" .
+            (int)$page_id . ", 0, 1, 0)";
         try {
             $this->db->query($sql);
         } catch (Exception $e) {
@@ -128,6 +128,10 @@ class ModelSalePageOrderBobs extends Model
         }
 
         if (!$this->setPageDescription($array_post_parameter, $page_id)) {
+            return false;
+        }
+
+        if (!$this->setPageLink($array_post_parameter, $page_id)) {
             return false;
         }
 
@@ -154,8 +158,8 @@ class ModelSalePageOrderBobs extends Model
     {
 
         $sql = "REPLACE INTO `" . DB_PREFIX . "page_order_bobs`
-        (`page_id`, `bottom`, `status`, `store_id`) VALUES (".
-            (int)$page_id.", 0, 1, 0)";
+        (`page_id`, `bottom`, `status`, `store_id`) VALUES (" .
+            (int)$page_id . ", 0, 1, 0)";
         try {
             $this->db->query($sql);
         } catch (Exception $e) {
@@ -163,6 +167,10 @@ class ModelSalePageOrderBobs extends Model
         }
 
         if (!$this->setPageDescription($array_post_parameter, $page_id)) {
+            return false;
+        }
+
+        if (!$this->setPageLink($array_post_parameter, $page_id)) {
             return false;
         }
 
@@ -221,14 +229,13 @@ class ModelSalePageOrderBobs extends Model
             }
 
             $query = $this->db->query($sql);
-            $pages=Array();
-            foreach($query->rows as $key=>$page)
-            {
-                $pages[$key]=$page;
+            $pages = Array();
+            foreach ($query->rows as $key => $page) {
+                $pages[$key] = $page;
 
-                $sql="SELECT keyword FROM " . DB_PREFIX . "url_alias WHERE query='page_order_bobs_id=".(int)$page['page_id']."'";
+                $sql = "SELECT keyword FROM " . DB_PREFIX . "url_alias WHERE query='page_order_bobs_id=" . (int)$page['page_id'] . "'";
                 $query = $this->db->query($sql);
-                $pages[$key]['keyword']=$query->row['keyword'];
+                $pages[$key]['keyword'] = $query->row['keyword'];
             }
 
             return $pages;
@@ -239,11 +246,10 @@ class ModelSalePageOrderBobs extends Model
                 $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "page_order_bobs op LEFT JOIN " . DB_PREFIX . "page_order_bobs_description opd ON (op.page_id = opd.page_id) WHERE opd.language_id = '" . (int)$this->config->get('config_language_id') . "' ORDER BY opd.page_id");
 
                 $pages_order = $query->rows;
-                $pages=Arrey();
-                foreach($pages_order as $key=>$page)
-                {
-                    $pages[$key]=$page;
-                    $pages[$key]['query']='	page_order_bobs_id='.$page['page_id'];
+                $pages = Arrey();
+                foreach ($pages_order as $key => $page) {
+                    $pages[$key] = $page;
+                    $pages[$key]['query'] = '	page_order_bobs_id=' . $page['page_id'];
                 }
 
                 $this->cache->set('page_order_bobs.' . (int)$this->config->get('config_language_id'), $pages_order);
@@ -257,9 +263,8 @@ class ModelSalePageOrderBobs extends Model
     {
         $this->db->query("DELETE FROM " . DB_PREFIX . "page_order_bobs WHERE page_id = '" . (int)$page_id . "'");
         $this->db->query("DELETE FROM " . DB_PREFIX . "page_order_bobs_description WHERE page_id = '" . (int)$page_id . "'");
+        $this->db->query("DELETE FROM " . DB_PREFIX . "page_order_bobs_links WHERE page_id = '" . (int)$page_id . "'");
         $this->db->query("DELETE FROM " . DB_PREFIX . "url_alias WHERE query = 'page_order_bobs_id=" . (int)$page_id . "'");
-
-        $this->cache->delete('information');
 
 
     }
@@ -297,10 +302,7 @@ class ModelSalePageOrderBobs extends Model
         `interkassa_identifier_shop`,
         `interkassa_test_mode`,
         `alter_payment_check`,
-        `alter_payment_text`,
-        `link_pay2pay`,
-        `link_robokassa`,
-        `link_interkassa`
+        `alter_payment_text`
         ) VALUES (" .
             (int)$page_id . ", " .
             (int)$array_post_parameter['order_id'] . ", " .
@@ -331,20 +333,63 @@ class ModelSalePageOrderBobs extends Model
             $this->db->escape($array_post_parameter['interkassa_identifier_shop']) . "', " .
             $this->db->escape($array_post_parameter['interkassa_test_mode']) . ", " .
             $this->db->escape($array_post_parameter['alter_payment_check']) . ", '" .
-            $this->db->escape($array_post_parameter['alter_payment_text']) . "', '" .
-            $this->db->escape($array_post_parameter['link_pay2pay']) . "', '" .
-            $this->db->escape($array_post_parameter['link_robokassa']) . "', '" .
-            $this->db->escape($array_post_parameter['link_interkassa']) . "')";
+            $this->db->escape($array_post_parameter['alter_payment_text']) . "')";
         try {
             $this->db->query($sql);
 
         } catch (Exception $e) {
             return false;
         }
+
+        $this->db->query("DELETE FROM " . DB_PREFIX . "page_order_bobs_links WHERE page_id = '" . (int)$page_id . "'");
+        foreach ($array_post_parameter['links'] as $key => $links) { //TODO delete
+            $sql = "REPLACE INTO `" . DB_PREFIX . "page_order_bobs_links`
+                (`page_id`,
+                `percent`,
+                `type`,
+                `link`
+                ) VALUES (" .
+                (int)$page_id . ", " .
+                (int)$links['percent'] . ", '" .
+                $this->db->escape($links['type']) . "', '" .
+                $this->db->escape($links['link']) . "')";
+            try {
+                $this->db->query($sql);
+
+            } catch (Exception $e) {
+                return false;
+            }
+        }
         return true;
     }
 
+
+    private function setPageLink($array_post_parameter, $page_id)
+    {
+        $this->db->query("DELETE FROM " . DB_PREFIX . "page_order_bobs_links WHERE page_id = '" . (int)$page_id . "'");
+        foreach ($array_post_parameter['links'] as $key => $links) { //TODO delete
+            $sql = "REPLACE INTO `" . DB_PREFIX . "page_order_bobs_links`
+                (`page_id`,
+                `percent`,
+                `type`,
+                `link`
+                ) VALUES (" .
+                (int)$page_id . ", " .
+                (int)$links['percent'] . ", '" .
+                $this->db->escape($links['type']) . "', '" .
+                $this->db->escape($links['link']) . "')";
+            try {
+                $this->db->query($sql);
+
+            } catch (Exception $e) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
+
+
 
 
 ?>

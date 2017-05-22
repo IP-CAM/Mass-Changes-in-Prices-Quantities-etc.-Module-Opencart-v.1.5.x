@@ -181,7 +181,7 @@ class ControllerSalePageOrderBobs extends Controller
             {
                 $array_post_parameter = $this->modifierPostToArray($this->request->post); //Создаем массив
                 $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters
-                $array_link = $this->getLink();
+                $array_link = $this->getLink($array_post_parameter);
                 $array_post_parameter = array_merge($array_post_parameter, $array_link);
                 $this->getForm($array_post_parameter, false);
             }
@@ -736,8 +736,21 @@ class ControllerSalePageOrderBobs extends Controller
 
     private function addAndUpdatePage($array_post_parameter)
     {
+        $array_link = Array();
 
-        $array_link = $this->getLink();
+        foreach ($array_post_parameter['percent'] as $key => $percent) {
+            $ar_links = $this->getLink($array_post_parameter, $percent);
+            $i=0;
+            foreach ($ar_links as $name => $link) {
+
+                $array_link['links'][$i] ['link'] = $link;
+                $array_link['links'][$i]['percent'] = $percent;
+                $array_link['links'][$i]['type'] = $name;
+                $i++;
+            }
+
+        }
+
         $array_post_parameter = array_merge($array_link, $array_post_parameter);
         if (isset($this->request->get['page_id'])) {
             if ($this->model_sale_page_order_bobs->updatePage($array_post_parameter, $this->request->get['page_id'])) {
@@ -983,18 +996,21 @@ class ControllerSalePageOrderBobs extends Controller
         $array_post_parameter['option_client_percent'] = null;
         if (isset($post['option_client_percent'])) {
             $array_post_parameter['option_client_percent'] = serialize($post['option_client_percent']);
+            $array_post_parameter['percent'] = $post['option_client_percent']; //Array in array
         } else {
             $array_post_parameter['option_client_percent'] = '';
+            $array_post_parameter['percent'][0] = 100;
         }
+
         if (!isset($post['option_client_percent_default'])) {
-            $array_post_parameter['option_client_percent_default']=10;
+            $array_post_parameter['option_client_percent_default'] = 10;
         }
 
 
         return $array_post_parameter;
     }
 
-    private function getLink()
+    private function getLinkss()
     {
 
         $langInterface = "ru";
@@ -1072,6 +1088,90 @@ class ControllerSalePageOrderBobs extends Controller
 
     }
 
+    private function getLink($array_post_parameter, $percent = 100)
+    {
+
+        $langInterface = "ru";
+        $linkPay2pay = "";
+        $linkRobokassa = "";
+        $linkInterkassa = "";
+        $order_id = $array_post_parameter['order_id']; // number of order
+        $currency_code = $array_post_parameter['currency_code'];
+        $price = $array_post_parameter['price']; //Summa
+        $price = (float)$price;
+
+
+        $description_order = (string)$array_post_parameter['description_order'];
+
+        if ($percent != 100) {
+            $percent_label = $this->language->get('percent_label');
+            $description_order .= ' ' . $percent_label . ' ' . $percent . '%';  //update
+        }
+
+        if (isset($array_post_parameter['pay2pay_check'])) {
+            $identifier_order = $array_post_parameter['pay2pay_identifier_shop'];
+            $test_mode = $array_post_parameter['pay2pay_test_mode'];
+            $key_secret = $array_post_parameter['pay2pay_key_secret'];
+
+
+            //Pay2pay
+            $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+            $xml .= "<request>";
+            $xml .= "<version>" . "1.2" . "</version>";
+            $xml .= "<merchant_id>" . $identifier_order . "</merchant_id>";
+            $xml .= "<language>" . $langInterface . "</language>";
+            $xml .= "<order_id>" . $order_id . "</order_id>";
+            $xml .= "<amount>" . $price . "</amount>";
+            $xml .= "<currency>" . $currency_code . "</currency>";
+            $xml .= "<description>" . $description_order . "</description>";
+            $xml .= "<paymode><code>" . "" . "</code></paymode>";
+            $xml .= "<test_mode>" . $test_mode . "</test_mode>";
+            $xml .= "</request>";
+            $key = $key_secret;
+
+            $sign = md5($key . $xml . $key);
+
+            $xml = base64_encode($xml);
+            $sign = base64_encode($sign);
+
+            $linkPay2pay = 'https://merchant.pay2pay.com/?page=init' . "&xml=" . $xml . "&sign=" . $sign;
+        }
+        if (isset($array_post_parameter['robokassa_check'])) {
+            $robokassa_identifier_shop = $array_post_parameter['robokassa_identifier_shop'];
+            $robokassa_key_secret = $array_post_parameter['robokassa_key_secret'];
+            $robokassa_test_mode = $array_post_parameter['robokassa_test_mode'];
+            //Robokassa
+            $price_format = number_format($price, 2, '.', '');
+            $crc = md5("$robokassa_identifier_shop:$price_format:$order_id:$robokassa_key_secret");
+            $linkRobokassa = "https://merchant.roboxchange.com/Index.aspx?" .
+                "MerchantLogin=$robokassa_identifier_shop&IsTest=$robokassa_test_mode&OutSum=$price_format&InvId=$order_id" .
+                "&Desc=$description_order&SignatureValue=$crc";
+
+
+        }
+
+        if (isset($array_post_parameter['interkassa_check'])) //interkassa
+        {
+            $description_order_interkassa = $description_order;
+            while ($this->getLengthStringUrl($description_order_interkassa) > 210) {
+                $description_order_interkassa = utf8_substr($description_order_interkassa, 0, -5);
+            }
+
+            $identifier_order = $array_post_parameter['interkassa_identifier_shop'];
+            $linkInterkassa = "https://sci.interkassa.com/?ik_co_id=$identifier_order&ik_pm_no=$order_id&ik_am=$price";
+            if ($array_post_parameter['robokassa_test_mode']) {
+                $linkInterkassa = $linkInterkassa . "&ik_pw_via=test_interkassa_test_xts";
+            }
+            $linkInterkassa = $linkInterkassa . "&ik_cur=$currency_code&ik_desc=$description_order_interkassa#/paysystemList";
+        }
+        $array_link = Array();
+        $array_link['link_pay2pay'] = $linkPay2pay;
+        $array_link['link_robokassa'] = $linkRobokassa;
+        $array_link['link_interkassa'] = $linkInterkassa;
+        return $array_link;
+
+    }
+
     private function modifierLinkNull($array_post_parameter)
     {
         $array_post_parameter['link_pay2pay'] = '';
@@ -1082,9 +1182,9 @@ class ControllerSalePageOrderBobs extends Controller
 
     private function getLengthStringUrl($str_desc)
     {
-        $i = substr_count($str_desc, ' ');
+        $i = mb_substr_count($str_desc, ' ');
         $i *= 2; //space %20 - 3
-        return strlen($str_desc) + $i;
+        return utf8_strlen($str_desc) + $i;
     }
 
 

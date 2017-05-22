@@ -28,6 +28,7 @@ $_['price_label']       	  = 'Стоимость заказа';
 $_['price_new_label']       	  = 'Сумма выставленного счета';
 $_['price_total_text']       	  = 'Общая стоймость заказа';
 $_['per_cent_of_all_description_text']       	  = 'Предоплата';
+$_['percent_label'] = 'Предоплата';
 
 $_['option_client_percent_label']       	  = 'Дать возможность выбора процента оплаты клиенту';
 $_['option_client_down_label']       	  = 'Свернуть';
