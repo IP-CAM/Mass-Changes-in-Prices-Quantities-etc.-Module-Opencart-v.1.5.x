@@ -1,9 +1,26 @@
 <?php
 
+/**
+ * Class ControllerSalePageOrderBobs Admin class controller Form And List page
+ *
+ * @author  Bobs
+ * @license GPL
+ */
 class ControllerSalePageOrderBobs extends Controller
 {
+    /**
+     * name page for table url_alias
+     * @var string
+     */
     private $name_page_seo = 'oplata-zakaz-%s';
 
+    /**
+     * Post of update percent one (page form)
+     *
+     * @return void
+     * @author  Bobs
+     *
+     */
     public function post()
     {
 
@@ -19,7 +36,8 @@ class ControllerSalePageOrderBobs extends Controller
         $json['price'] = floor($price); //delete  TODO
         $prefix_damp = $this->currency->format(1000);
         $prefix = mb_substr($prefix_damp, -2, 2, 'UTF-8'); //p.
-        $pattern = '/' . $this->language->get('per_cent_of_all_description_text') . '.*%, ' . mb_strtolower($this->language->get('price_new_label'), 'UTF-8') . '.*' . $prefix . '/';
+        $pattern = '/' . $this->language->get('per_cent_of_all_description_text') . '.*%, ' . mb_strtolower($this->language->get('price_new_label'),
+                'UTF-8') . '.*' . $prefix . '/';
         $text = $this->request->post['description_order'];
         if (preg_match($pattern, $text)) { //text empty (yes)
             if ($percent == '100') { //delete text description_order
@@ -29,17 +47,20 @@ class ControllerSalePageOrderBobs extends Controller
             } else {
                 $patterns = Array();
                 $patterns[0] = '/' . $this->language->get('per_cent_of_all_description_text') . '.*%/';
-                $patterns[1] = '/' . mb_strtolower($this->language->get('price_new_label'), 'UTF-8') . '.*' . $prefix . '/';
+                $patterns[1] = '/' . mb_strtolower($this->language->get('price_new_label'),
+                        'UTF-8') . '.*' . $prefix . '/';
                 $replace = array();
                 $replace[0] = $this->language->get('per_cent_of_all_description_text') . ' ' . $this->request->post['percent'];
-                $replace[1] = mb_strtolower($this->language->get('price_new_label'), 'UTF-8') . ' ' . $this->currency->format(floor($price)); //delete  TODO
+                $replace[1] = mb_strtolower($this->language->get('price_new_label'),
+                        'UTF-8') . ' ' . $this->currency->format(floor($price)); //delete  TODO
                 $json['description_order'] = preg_replace($patterns, $replace, $text);
             }
         } else {
             if ($percent == '100') {
                 $json['description_order'] = $this->request->post['description_order'];
             } else {
-                $json['description_order'] = $this->request->post['description_order'] . "\n" . $this->language->get('per_cent_of_all_description_text') . ' ' . $this->request->post['percent'] . ', ' . mb_strtolower($this->language->get('price_new_label'), 'UTF-8') . ' ' . $this->currency->format($price);
+                $json['description_order'] = $this->request->post['description_order'] . "\n" . $this->language->get('per_cent_of_all_description_text') . ' ' . $this->request->post['percent'] . ', ' . mb_strtolower($this->language->get('price_new_label'),
+                        'UTF-8') . ' ' . $this->currency->format($price);
             }
         }
         $json['price_total_text'] = $this->language->get('price_total_text') . ' ' . $this->currency->format($this->request->post['price']);
@@ -47,6 +68,11 @@ class ControllerSalePageOrderBobs extends Controller
 
     }
 
+    /**
+     * The entry point in the module (page list)
+     *
+     * @author  Bobs
+     */
     public function index()
     {
         $this->language->load('sale/page_order_bobs');
@@ -58,6 +84,12 @@ class ControllerSalePageOrderBobs extends Controller
         $this->getList();
     }
 
+
+    /**
+     * At the entrance to change (page list)
+     *
+     * @author  Bobs
+     */
     public function update()
     {
         $this->language->load('sale/page_order_bobs');
@@ -70,6 +102,11 @@ class ControllerSalePageOrderBobs extends Controller
         $this->getForm($page);
     }
 
+    /**
+     * When you create page payment (page list)
+     *
+     * @author  Bobs
+     */
     public function insert()
     {
         $this->language->load('sale/page_order_bobs');
@@ -81,6 +118,11 @@ class ControllerSalePageOrderBobs extends Controller
         $this->getForm();
     }
 
+    /**
+     * Create links payment (page list)
+     *
+     * @author  Bobs
+     */
     public function link()
     {
         $this->language->load('sale/page_order_bobs');
@@ -93,6 +135,11 @@ class ControllerSalePageOrderBobs extends Controller
         $this->getForm(null, $page_form);
     }
 
+    /**
+     * Delete page payment (page list)
+     *
+     * @author  Bobs
+     */
     public function delete()
     {
         $this->language->load('sale/page_order_bobs');
@@ -103,10 +150,10 @@ class ControllerSalePageOrderBobs extends Controller
 
         if (isset($this->request->post['selected']) && $this->validateDelete()) {
             foreach ($this->request->post['selected'] as $page_id) {
-                $this->model_sale_page_order_bobs->deleteOrderPage($page_id);
+                $this->model_sale_page_order_bobs->deleteOrderPage($page_id); //Delete strong BD
             }
 
-            $this->session->data['success'] = $this->language->get('page_delete_label');
+            $this->session->data['success'] = $this->language->get('page_delete_label'); //Messange
 
             $url = '';
 
@@ -122,12 +169,23 @@ class ControllerSalePageOrderBobs extends Controller
                 $url .= '&page=' . $this->request->get['page'];
             }
 
-            $this->redirect($this->url->link('sale/page_order_bobs', 'token=' . $this->session->data['token'] . $url, 'SSL'));
+            $this->redirect($this->url->link('sale/page_order_bobs', 'token=' . $this->session->data['token'] . $url,
+                'SSL'));
         }
 
         $this->getList();
     }
 
+    /**
+     * The Main entry point for teams from form (page form)
+     *  POST['terminal_id'] :
+     *  0 - save page,
+     *  1 - to make the data from the number order,
+     *  2 - create link,
+     *  3 - to make the data from the number order (form link)
+     *
+     * @author  Bobs
+     */
 
     public function terminal()
     {
@@ -144,13 +202,12 @@ class ControllerSalePageOrderBobs extends Controller
             return;
         }
         if ($this->validateForm()) {
-            if ($this->request->post['terminal_id'] == 1) { //( terminal_id ) 0 - save page, 1 - to make the data from the number order, 2 - create link, 3 - to make the data from the number order (form link)
+            if ($this->request->post['terminal_id'] == 1) {
                 $this->getOrderId(1);
             } elseif ($this->request->post['terminal_id'] == 3) {
                 $this->getOrderId(3);
-            } elseif ($this->request->post['terminal_id'] == 0) { //( terminal_id ) 0 - save page, 1 - to make the data from the number order, 2 - create link, 3 - to make the data from the number order (form link)
-                $array_post_parameter = $this->modifierPostToArray($this->request->post); //Создаем массив
-
+            } elseif ($this->request->post['terminal_id'] == 0) {
+                $array_post_parameter = $this->modifierPostToArray($this->request->post); //Create array
                 if ($this->addAndUpdatePage($array_post_parameter)) {
                     $array_post_parameter['get_order_id'] = null;
                     $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters
@@ -169,32 +226,24 @@ class ControllerSalePageOrderBobs extends Controller
                         $url .= '&page=' . $this->request->get['page'];
                     }
 
-                    $this->redirect($this->url->link('sale/page_order_bobs', 'token=' . $this->session->data['token'] . $url, 'SSL'));
+                    $this->redirect($this->url->link('sale/page_order_bobs',
+                        'token=' . $this->session->data['token'] . $url, 'SSL'));
                 } else {
-
-                    $array_post_parameter = $this->modifierPostToArray($this->request->post); //Создаем массив
-                    $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters
-                    $this->getForm($array_post_parameter);
+                    $this->setUpdateForm(); //errors:
                 }
 
-            } elseif ($this->request->post['terminal_id'] == 2) //( terminal_id ) 0 - save page, 1 - to make the data from the number order, 2 - create link, 3 - to make the data from the number order (form link)
-            {
+            } elseif ($this->request->post['terminal_id'] == 2) {
                 $array_post_parameter = $this->modifierPostToArray($this->request->post); //Создаем массив
                 $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters
-                $array_link = $this->getLink($array_post_parameter);
+                $array_link = $this->getLink($array_post_parameter);  //Create link
                 $array_post_parameter = array_merge($array_post_parameter, $array_link);
                 $this->getForm($array_post_parameter, false);
             }
-            //errors:
         } else {
             if ($this->request->post['terminal_id'] == 0 || $this->request->post['terminal_id'] == 1) {
-                $array_post_parameter = $this->modifierPostToArray($this->request->post); //Создаем массив
-                $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters
-                $this->getForm($array_post_parameter);
+                $this->setUpdateForm();
             } elseif ($this->request->post['terminal_id'] == 2 || $this->request->post['terminal_id'] == 3) {
-                $array_post_parameter = $this->modifierPostToArray($this->request->post); //Создаем массив
-                $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters
-                $this->getForm($array_post_parameter, false);
+                $this->setUpdateForm(false);
             }
 
         }
@@ -202,8 +251,67 @@ class ControllerSalePageOrderBobs extends Controller
     }
 
 
+    /**
+     * Visible List form
+     *
+     * @author  Bobs
+     */
     protected function getList()
     {
+        //LINKS BEGIN
+        $url = '';
+        if (isset($this->request->get['sort'])) {
+            $url .= '&sort=' . $this->request->get['sort'];
+        }
+        if (isset($this->request->get['order'])) {
+            $url .= '&order=' . $this->request->get['order'];
+        }
+        if (isset($this->request->get['page'])) {
+            $url .= '&page=' . $this->request->get['page'];
+        }
+
+        $this->data['breadcrumbs'] = array();
+        $this->data['breadcrumbs'][] = array(
+            'text' => $this->language->get('text_home'),
+            'href' => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL'),
+            'separator' => false
+        );
+        $this->data['breadcrumbs'][] = array(
+            'text' => $this->language->get('heading_title'),
+            'href' => $this->url->link('sale/page_order_bobs', 'token=' . $this->session->data['token'] . $url, 'SSL'),
+            'separator' => ' :: '
+        );
+
+        $this->data['link_form'] = $this->url->link('sale/page_order_bobs/link',
+            'token=' . $this->session->data['token'], 'SSL');
+        $this->data['insert'] = $this->url->link('sale/page_order_bobs/insert',
+            'token=' . $this->session->data['token'] . $url, 'SSL');
+        $this->data['delete'] = $this->url->link('sale/page_order_bobs/delete',
+            'token=' . $this->session->data['token'] . $url, 'SSL');
+
+        //ADD LINK
+        $url = '';
+
+        if (isset($this->request->get['order'])) {
+            if($this->request->get['order']=='ASC') {
+                $url .= '&order=DESC';
+            } else {
+                $url .= '&order=ASC';
+            }
+        } else {
+            $url .= '&order=ASC'; //Default
+        }
+        if (isset($this->request->get['page'])) {
+            $url .= '&page=' . $this->request->get['page'];
+        }
+        $this->data['sort_page_id'] = $this->url->link('sale/page_order_bobs',
+            'token=' . $this->session->data['token'] . '&sort=opd.page_id' . $url, 'SSL');
+        $this->data['sort_sort_order_id'] = $this->url->link('sale/page_order_bobs',
+            'token=' . $this->session->data['token'] . '&sort=opd.order_id' . $url, 'SSL');
+        //LINKS END
+
+        //PAGINATION BEGIN
+
         if (isset($this->request->get['sort'])) {
             $sort = $this->request->get['sort'];
         } else {
@@ -222,6 +330,13 @@ class ControllerSalePageOrderBobs extends Controller
             $page = 1;
         }
 
+        $data = array(
+            'sort' => $sort,
+            'order' => $order,
+            'start' => ($page - 1) * $this->config->get('config_admin_limit'),
+            'limit' => $this->config->get('config_admin_limit')
+        );
+        $page_order_total = $this->model_sale_page_order_bobs->getTotalOrderPageCount();
         $url = '';
 
         if (isset($this->request->get['sort'])) {
@@ -232,48 +347,29 @@ class ControllerSalePageOrderBobs extends Controller
             $url .= '&order=' . $this->request->get['order'];
         }
 
-        if (isset($this->request->get['page'])) {
-            $url .= '&page=' . $this->request->get['page'];
-        }
+        $pagination = new Pagination();     //Показано с 1 по 4 из 4 (всего страниц: 1)
+        $pagination->total = $page_order_total;
+        $pagination->page = $page;
+        $pagination->limit = $this->config->get('config_admin_limit');
+        $pagination->text = $this->language->get('text_pagination');
+        $pagination->url = $this->url->link('sale/page_order_bobs',
+            'token=' . $this->session->data['token'] . $url . '&page={page}', 'SSL');
+        $this->data['pagination'] = $pagination->render();
 
-        $this->data['breadcrumbs'] = array();
+        $this->data['sort'] = $sort;
+        $this->data['order'] = $order;
 
-        $this->data['breadcrumbs'][] = array(
-            'text' => $this->language->get('text_home'),
-            'href' => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL'),
-            'separator' => false
-        );
-
-        $this->data['breadcrumbs'][] = array(
-            'text' => $this->language->get('heading_title'),
-            'href' => $this->url->link('sale/page_order_bobs', 'token=' . $this->session->data['token'] . $url, 'SSL'),
-            'separator' => ' :: '
-        );
-
-        $this->data['link_form'] = $this->url->link('sale/page_order_bobs/link', 'token=' . $this->session->data['token'], 'SSL');
-        $this->data['insert'] = $this->url->link('sale/page_order_bobs/insert', 'token=' . $this->session->data['token'] . $url, 'SSL');
-        $this->data['delete'] = $this->url->link('sale/page_order_bobs/delete', 'token=' . $this->session->data['token'] . $url, 'SSL');
-
-        $this->data['pages'] = array();
-
-        $data = array(
-            'sort' => $sort,
-            'order' => $order,
-            'start' => ($page - 1) * $this->config->get('config_admin_limit'),
-            'limit' => $this->config->get('config_admin_limit')
-        );
-
-        $page_order_total = $this->model_sale_page_order_bobs->getTotalOrderPageCount();
-
+        //TABLE PARAMETER BEGIN
         $results = $this->model_sale_page_order_bobs->getPagesOrder($data);
-
         $server_host = 'http://' . $_SERVER['HTTP_HOST'] . '/';
+        $this->data['pages'] = array();
         foreach ($results as $result) {
             $action = array();
 
             $action[] = array(
                 'text' => $this->language->get('text_edit'),
-                'href' => $this->url->link('sale/page_order_bobs/update', 'token=' . $this->session->data['token'] . '&page_id=' . $result['page_id'] . $url, 'SSL')
+                'href' => $this->url->link('sale/page_order_bobs/update',
+                    'token=' . $this->session->data['token'] . '&page_id=' . $result['page_id'] . $url, 'SSL')
             );
 
             if ($result['price'] == $result['price_total']) {
@@ -294,11 +390,10 @@ class ControllerSalePageOrderBobs extends Controller
                 'column_link_page' => $link,
                 'receiver_of_product' => $result['receiver_of_product'],
                 'price' => $price,
-                'selected' => isset($this->request->post['selected']) && in_array($result['information_id'], $this->request->post['selected']),
                 'action' => $action
             );
         }
-
+        //TABLE PARAMETER END
 
         //language
         $this->data['heading_title'] = $this->language->get('heading_title');
@@ -308,97 +403,55 @@ class ControllerSalePageOrderBobs extends Controller
         $this->data['column_receiver_of_product_label'] = $this->language->get('column_receiver_of_product_label');
         $this->data['column_price_label'] = $this->language->get('column_price_label');
         $this->data['column_action_label'] = $this->language->get('column_action_label');
-
         $this->data['text_no_results_label'] = $this->language->get('text_no_results_label');
-
         $this->data['button_link_form_label'] = $this->language->get('button_link_form_label');
         $this->data['button_insert_label'] = $this->language->get('button_insert_label');
         $this->data['button_delete_label'] = $this->language->get('button_delete_label');
-
 
         if (isset($this->error['warning'])) {
             $this->data['error_warning'] = $this->error['warning'];
         } else {
             $this->data['error_warning'] = '';
         }
-
         if (isset($this->session->data['success'])) {
             $this->data['success'] = $this->session->data['success'];
-
             unset($this->session->data['success']);
         } else {
             $this->data['success'] = '';
         }
-
-        $url = '';
-
-        if ($order == 'ASC') {
-            $url .= '&order=DESC';
-        } else {
-            $url .= '&order=ASC';
-        }
-
-        if (isset($this->request->get['page'])) {
-            $url .= '&page=' . $this->request->get['page'];
-        }
-
-        $this->data['sort_page_id'] = $this->url->link('sale/page_order_bobs', 'token=' . $this->session->data['token'] . '&sort=opd.page_id' . $url, 'SSL');
-        $this->data['sort_sort_order_id'] = $this->url->link('sale/page_order_bobs', 'token=' . $this->session->data['token'] . '&sort=opd.order_id' . $url, 'SSL');
-
-        $url = '';
-
-        if (isset($this->request->get['sort'])) {
-            $url .= '&sort=' . $this->request->get['sort'];
-        }
-
-        if (isset($this->request->get['order'])) {
-            $url .= '&order=' . $this->request->get['order'];
-        }
-
-        //Показано с 1 по 4 из 4 (всего страниц: 1)
-        $pagination = new Pagination();
-        $pagination->total = $page_order_total;
-        $pagination->page = $page;
-        $pagination->limit = $this->config->get('config_admin_limit');
-        $pagination->text = $this->language->get('text_pagination');
-        $pagination->url = $this->url->link('sale/page_order_bobs', 'token=' . $this->session->data['token'] . $url . '&page={page}', 'SSL');
-        $this->data['pagination'] = $pagination->render();
-
-        $this->data['sort'] = $sort;
-        $this->data['order'] = $order;
 
         $this->template = 'sale/page_order_bobs_list.tpl';
         $this->children = array(
             'common/header',
             'common/footer'
         );
-
         $this->response->setOutput($this->render());
     }
 
 
+    /**
+     * Visible Form Link or Page
+     *
+     * @param        $array_post_parameter = null   The POST->modifierPostToArray()->  OR Table parameters
+     * @param int    $page_form = true Page or Link visible
+     * @author  Bobs
+     */
     protected function getForm($array_post_parameter = null, $page_form = true)
     {
 
         $this->data['breadcrumbs'] = array();
-
         $this->data['breadcrumbs'][] = array(
             'text' => $this->language->get('text_home'),
             'href' => $this->url->link('common/home', 'token=' . $this->session->data['token'], 'SSL'),
             'separator' => false
         );
-
         $this->data['breadcrumbs'][] = array(
             'text' => $this->language->get('heading_title'),
             'href' => $this->url->link('sale/page_order_bobs', 'token=' . $this->session->data['token'], 'SSL'),
             'separator' => ' :: '
         );
 
-        $this->data['page_form'] = (int)$page_form;
-
-
-        //Названия полей и значения по умолчанию
-
+        //LANGUAGE STRING BEGIN
         $this->data['heading_title'] = $this->language->get('heading_title');
         $this->data['heading_title_link'] = $this->language->get('heading_title_link');
 
@@ -462,16 +515,17 @@ class ControllerSalePageOrderBobs extends Controller
         $this->data['link_pay2pay_label'] = $this->language->get('link_pay2pay_label');
         $this->data['link_robokassa_label'] = $this->language->get('link_robokassa_label');
         $this->data['link_interkassa_label'] = $this->language->get('link_interkassa_label');
+        //LANGUAGE STRING END
 
-
+        $this->data['page_form'] = (int)$page_form;
         $this->data['page_host'] = 'http://' . $_SERVER['HTTP_HOST'] . '/'; //Name site
-
+        $this->data['name_page_seo'] = $this->name_page_seo;
 
         $page_order_parameters = $this->model_sale_page_order_bobs->getParameters();//Get parameters
         if ($page_order_parameters['get_order_id'] === null) {
             $page_order_parameters['get_order_id'] = '';
         }
-        $this->data['name_page_seo'] = $this->name_page_seo;
+
         if (sizeof($array_post_parameter)) {
             $this->data['get_order_id'] = $page_order_parameters['get_order_id'];
             $this->data['order_id'] = $array_post_parameter['order_id'];
@@ -495,7 +549,7 @@ class ControllerSalePageOrderBobs extends Controller
             } else {
                 $this->data['option_client_percent_default'] =
                     ($page_order_parameters['option_client_percent_default'] != null) ?
-                        $page_order_parameters['option_client_percent_default'] : 10;
+                        $page_order_parameters['option_client_percent_default'] : 100;
 
                 $this->data['option_client_percent'] =
                     ($page_order_parameters['option_client_percent'] != null) ?
@@ -559,7 +613,7 @@ class ControllerSalePageOrderBobs extends Controller
 
             $this->data['option_client_percent_default'] =
                 ($page_order_parameters['option_client_percent_default'] != null) ?
-                    $page_order_parameters['option_client_percent_default'] : 10;
+                    $page_order_parameters['option_client_percent_default'] : 100;
 
             $this->data['option_client_percent'] =
                 ($page_order_parameters['option_client_percent'] != null &&
@@ -618,12 +672,15 @@ class ControllerSalePageOrderBobs extends Controller
         }
 
         if (!isset($this->request->get['page_id'])) {
-            $this->data['action'] = $this->url->link('sale/page_order_bobs/terminal', 'token=' . $this->session->data['token'] . $url, 'SSL');
+            $this->data['action'] = $this->url->link('sale/page_order_bobs/terminal',
+                'token=' . $this->session->data['token'] . $url, 'SSL');
         } else {
-            $this->data['action'] = $this->url->link('sale/page_order_bobs/terminal', 'token=' . $this->session->data['token'] . '&page_id=' . $this->request->get['page_id'] . $url, 'SSL');
+            $this->data['action'] = $this->url->link('sale/page_order_bobs/terminal',
+                'token=' . $this->session->data['token'] . '&page_id=' . $this->request->get['page_id'] . $url, 'SSL');
         }
 
-        $this->data['cancel'] = $this->url->link('sale/page_order_bobs', 'token=' . $this->session->data['token'] . $url, 'SSL');
+        $this->data['cancel'] = $this->url->link('sale/page_order_bobs',
+            'token=' . $this->session->data['token'] . $url, 'SSL');
 
         $this->data['post_link'] = 'index.php?route=sale/page_order_bobs/post&token=' . $this->session->data['token'];
 
@@ -636,7 +693,9 @@ class ControllerSalePageOrderBobs extends Controller
         $this->response->setOutput($this->render());
     }
 
-    protected function getOrderId($id_terminal) //( terminal_id ) !0 - save page, 1 - to make the data from the number order, !2 - create link, 3 - to make the data from the number order (form link)
+    protected function getOrderId(
+        $id_terminal
+    ) //( terminal_id ) !0 - save page, 1 - to make the data from the number order, !2 - create link, 3 - to make the data from the number order (form link)
     {
 
 
@@ -676,7 +735,8 @@ class ControllerSalePageOrderBobs extends Controller
 
         $description_order = '';
         foreach ($order_products as $order_product) {
-            $order_options = $this->model_sale_order->getOrderOptions($get_order_id, $order_product['order_product_id']);
+            $order_options = $this->model_sale_order->getOrderOptions($get_order_id,
+                $order_product['order_product_id']);
             if (strpos($order_product['name'], '-') != false) {
                 $name = substr($order_product['name'], 0, strpos($order_product['name'], '-'));
                 $name = trim($name);
@@ -737,15 +797,18 @@ class ControllerSalePageOrderBobs extends Controller
     private function addAndUpdatePage($array_post_parameter)
     {
         $array_link = Array();
-
+        $i = 0;
         foreach ($array_post_parameter['percent'] as $key => $percent) {
             $ar_links = $this->getLink($array_post_parameter, $percent);
-            $i=0;
+
             foreach ($ar_links as $name => $link) {
 
                 $array_link['links'][$i] ['link'] = $link;
                 $array_link['links'][$i]['percent'] = $percent;
                 $array_link['links'][$i]['type'] = $name;
+                $array_link['links'][$i]['default'] = (
+                $array_post_parameter['option_client_percent_default'] == $percent ?
+                    1 : 0);
                 $i++;
             }
 
@@ -799,7 +862,9 @@ class ControllerSalePageOrderBobs extends Controller
             }
             if (isset($this->request->get['page_id'])) { //Есть ли имя такое же, если есть, и она ссылается не на нашу страницу, запрещяем
                 if ($this->model_sale_page_order_bobs->findUrlAliasName($this->request->post['name_page'])) {
-                    if (!$this->model_sale_page_order_bobs->suitableUrlAliasNameAndId($this->request->post['name_page'], $this->request->get['page_id'])) {
+                    if (!$this->model_sale_page_order_bobs->suitableUrlAliasNameAndId($this->request->post['name_page'],
+                        $this->request->get['page_id'])
+                    ) {
 
                         $this->data['errors_warning'][] = 'error_name_page 3';
                         return false;
@@ -826,6 +891,14 @@ class ControllerSalePageOrderBobs extends Controller
             $receiver_of_product = $this->request->post['receiver_of_product'];
             if ($receiver_of_product == '') {
                 $this->data['errors_warning'][] = $this->language->get('error_receiver_of_product');
+            }
+
+            //Percent and default compliance
+            if (isset($this->request->post['option_client_percent']) &&
+                !in_array($this->request->post['option_client_percent_default'],
+                    $this->request->post['option_client_percent'])
+            ) {
+                $this->data['errors_warning'][] = $this->language->get('error_percent_and_default_compliance');
             }
 
 
@@ -1003,7 +1076,7 @@ class ControllerSalePageOrderBobs extends Controller
         }
 
         if (!isset($post['option_client_percent_default'])) {
-            $array_post_parameter['option_client_percent_default'] = 10;
+            $array_post_parameter['option_client_percent_default'] = 100;
         }
 
 
@@ -1185,6 +1258,26 @@ class ControllerSalePageOrderBobs extends Controller
         $i = mb_substr_count($str_desc, ' ');
         $i *= 2; //space %20 - 3
         return utf8_strlen($str_desc) + $i;
+    }
+
+    /**
+     * Visible form
+     *
+     * @param int    $page_form   The visible page form or links form
+     *
+     * @author  Bobs
+     */
+    private function setUpdateForm($page_form=null)
+    {
+        $array_post_parameter = $this->modifierPostToArray($this->request->post); //Создаем массив
+        $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters
+        if(isset($page_form))
+        {
+            $this->getForm($array_post_parameter, $page_form);
+        } else {
+            $this->getForm($array_post_parameter);
+        }
+
     }
 
 

@@ -28,7 +28,7 @@
                     <thead>
                     <tr>
                         <td width="1" style="text-align: center;"><input type="checkbox"
-                                                                         onclick="$('input[name*=\'selected\']').attr('checked', this.checked);"/>
+                             onclick="$('input[name*=\'selected\']').attr('checked', this.checked);"/>
                         </td>
                         <td class="center" style="width: 30px;"><?php if ($sort == 'opd.page_id') { ?>
                             <a href="<?php echo $sort_page_id; ?>"
@@ -54,15 +54,14 @@
                     <?php if ($pages) { ?>
                     <?php foreach ($pages as $page) { ?>
                     <tr>
-                        <td style="text-align: center;"><?php if ($page['selected']) { ?>
-                            <input type="checkbox" name="selected[]" value="<?php echo $page['page_id']; ?>"
-                                   checked="checked"/>
-                            <?php } else { ?>
+                        <td style="text-align: center;">
                             <input type="checkbox" name="selected[]" value="<?php echo $page['page_id']; ?>"/>
-                            <?php } ?></td>
+                        </td>
                         <td class="center"><?php echo $page['page_id']; ?></td>
                         <td class="left"><?php echo $page['order_id']; ?></td>
-                        <td class="left"><a href="<?php echo $page['column_link_page']; ?>" target="_blank"><?php echo $page['column_link_page']; ?></a> </td>
+                        <td class="left"><a href="<?php echo $page['column_link_page']; ?>" target="_blank">
+                                <?php echo $page['column_link_page']; ?></a>
+                        </td>
                         <td class="right"><?php echo $page['receiver_of_product']; ?></td>
                         <td class="right"><?php echo $page['price']; ?></td>
                         <td class="right"><?php foreach ($page['action'] as $action) { ?>

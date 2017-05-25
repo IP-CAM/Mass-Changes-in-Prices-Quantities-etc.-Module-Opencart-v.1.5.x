@@ -98,10 +98,13 @@ class ControllerModulePageOrderBobs extends Controller
         $this->db->query($sql);
 
         $sql = "CREATE TABLE IF NOT EXISTS  `" . DB_PREFIX . "page_order_bobs_links`
-      ( `page_id` INT(11) NOT NULL ,
-      `percent`INT(11) NOT NULL ,
+      ( `link_id` INT(11) AUTO_INCREMENT NOT NULL ,
+      `page_id` INT(11) NOT NULL ,
+      `percent` INT(11) NOT NULL ,
+      `default` TINYINT(1) NOT NULL,
       `type` VARCHAR(255) NOT NULL ,
-      `link` TEXT NOT NULL)
+      `link` TEXT NOT NULL,
+      PRIMARY KEY(`link_id`))
        ENGINE  =  MyISAM  DEFAULT CHARSET  = utf8";
         $this->db->query($sql);
 
@@ -133,7 +136,7 @@ class ControllerModulePageOrderBobs extends Controller
             `parameters_id` = '1',
             `currency_code_check` =0 ,
             `get_order_id` = null,
-            `option_client_percent_default` = 10 ,
+            `option_client_percent_default` = 100 ,
             `option_client_percent` = '' ,
             `pay2pay_check` = 1,
             `pay2pay_identifier_shop` = '57249',

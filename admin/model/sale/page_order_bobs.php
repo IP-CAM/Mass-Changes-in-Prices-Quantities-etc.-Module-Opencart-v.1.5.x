@@ -341,25 +341,6 @@ class ModelSalePageOrderBobs extends Model
             return false;
         }
 
-        $this->db->query("DELETE FROM " . DB_PREFIX . "page_order_bobs_links WHERE page_id = '" . (int)$page_id . "'");
-        foreach ($array_post_parameter['links'] as $key => $links) { //TODO delete
-            $sql = "REPLACE INTO `" . DB_PREFIX . "page_order_bobs_links`
-                (`page_id`,
-                `percent`,
-                `type`,
-                `link`
-                ) VALUES (" .
-                (int)$page_id . ", " .
-                (int)$links['percent'] . ", '" .
-                $this->db->escape($links['type']) . "', '" .
-                $this->db->escape($links['link']) . "')";
-            try {
-                $this->db->query($sql);
-
-            } catch (Exception $e) {
-                return false;
-            }
-        }
         return true;
     }
 
@@ -369,14 +350,18 @@ class ModelSalePageOrderBobs extends Model
         $this->db->query("DELETE FROM " . DB_PREFIX . "page_order_bobs_links WHERE page_id = '" . (int)$page_id . "'");
         foreach ($array_post_parameter['links'] as $key => $links) { //TODO delete
             $sql = "REPLACE INTO `" . DB_PREFIX . "page_order_bobs_links`
-                (`page_id`,
+                (`link_id`,
+                `page_id`,
                 `percent`,
+                `default`,
                 `type`,
                 `link`
-                ) VALUES (" .
+                ) VALUES ('', " .
                 (int)$page_id . ", " .
-                (int)$links['percent'] . ", '" .
-                $this->db->escape($links['type']) . "', '" .
+                (int)$links['percent'] . ", " .
+                (int)$links['default'] . ", '" .
+                $this->db->escape($links['type']) . "',
+                 '" .
                 $this->db->escape($links['link']) . "')";
             try {
                 $this->db->query($sql);
