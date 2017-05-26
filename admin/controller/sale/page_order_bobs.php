@@ -26,18 +26,23 @@ class ControllerSalePageOrderBobs extends Controller
 
         $this->language->load('sale/page_order_bobs');
         $json = array();
-        if (!isset($this->request->post['price']) || !isset($this->request->post['percent']) ||
+        if (!isset($this->request->post['price']) || !isset($this->request->post['one_percent']) ||
             !isset($this->request->post['description_order'])
         ) {
             exit;
         }
-        $percent = substr($this->request->post['percent'], 0, -1);
+        $percent = substr($this->request->post['one_percent'], 0, -1);
         $price = $this->request->post['price'] * $percent / 100;
         $json['price'] = floor($price); //delete  TODO
         $prefix_damp = $this->currency->format(1000);
         $prefix = mb_substr($prefix_damp, -2, 2, 'UTF-8'); //p.
-        $pattern = '/' . $this->language->get('per_cent_of_all_description_text') . '.*%, ' . mb_strtolower($this->language->get('price_new_label'),
-                'UTF-8') . '.*' . $prefix . '/';
+        $pattern = '/' .
+            $this->language->get('per_cent_of_all_description_text') .
+            '.*%, ' .
+            mb_strtolower($this->language->get('price_new_label'), 'UTF-8') .
+            '.*' .
+            $prefix .
+            '/';
         $text = $this->request->post['description_order'];
         if (preg_match($pattern, $text)) { //text empty (yes)
             if ($percent == '100') { //delete text description_order
@@ -50,20 +55,29 @@ class ControllerSalePageOrderBobs extends Controller
                 $patterns[1] = '/' . mb_strtolower($this->language->get('price_new_label'),
                         'UTF-8') . '.*' . $prefix . '/';
                 $replace = array();
-                $replace[0] = $this->language->get('per_cent_of_all_description_text') . ' ' . $this->request->post['percent'];
-                $replace[1] = mb_strtolower($this->language->get('price_new_label'),
-                        'UTF-8') . ' ' . $this->currency->format(floor($price)); //delete  TODO
+                $replace[0] = $this->language->get('per_cent_of_all_description_text') .
+                    ' ' . $this->request->post['one_percent'];
+                $replace[1] = mb_strtolower($this->language->get('price_new_label'), 'UTF-8') .
+                    ' ' . $this->currency->format(floor($price)); //delete  TODO
                 $json['description_order'] = preg_replace($patterns, $replace, $text);
             }
         } else {
             if ($percent == '100') {
                 $json['description_order'] = $this->request->post['description_order'];
             } else {
-                $json['description_order'] = $this->request->post['description_order'] . "\n" . $this->language->get('per_cent_of_all_description_text') . ' ' . $this->request->post['percent'] . ', ' . mb_strtolower($this->language->get('price_new_label'),
-                        'UTF-8') . ' ' . $this->currency->format($price);
+                $json['description_order'] = $this->request->post['description_order'] .
+                    "\n" .
+                    $this->language->get('per_cent_of_all_description_text') .
+                    ' ' .
+                    $this->request->post['one_percent'] .
+                    ', ' .
+                    mb_strtolower($this->language->get('price_new_label'), 'UTF-8') .
+                    ' ' .
+                    $this->currency->format($price);
             }
         }
-        $json['price_total_text'] = $this->language->get('price_total_text') . ' ' . $this->currency->format($this->request->post['price']);
+        $json['price_total_text'] = $this->language->get('price_total_text') .
+            ' ' . $this->currency->format($this->request->post['price']);
         $this->response->setOutput(json_encode($json));
 
     }
@@ -293,7 +307,7 @@ class ControllerSalePageOrderBobs extends Controller
         $url = '';
 
         if (isset($this->request->get['order'])) {
-            if($this->request->get['order']=='ASC') {
+            if ($this->request->get['order'] == 'ASC') {
                 $url .= '&order=DESC';
             } else {
                 $url .= '&order=ASC';
@@ -311,7 +325,6 @@ class ControllerSalePageOrderBobs extends Controller
         //LINKS END
 
         //PAGINATION BEGIN
-
         if (isset($this->request->get['sort'])) {
             $sort = $this->request->get['sort'];
         } else {
@@ -355,6 +368,7 @@ class ControllerSalePageOrderBobs extends Controller
         $pagination->url = $this->url->link('sale/page_order_bobs',
             'token=' . $this->session->data['token'] . $url . '&page={page}', 'SSL');
         $this->data['pagination'] = $pagination->render();
+        //PAGINATION END
 
         $this->data['sort'] = $sort;
         $this->data['order'] = $order;
@@ -372,16 +386,21 @@ class ControllerSalePageOrderBobs extends Controller
                     'token=' . $this->session->data['token'] . '&page_id=' . $result['page_id'] . $url, 'SSL')
             );
 
-            if ($result['price'] == $result['price_total']) {
-                $price = $this->currency->format($result['price_total']);
+            if ($result['price'] == $result['one_price_total']) {
+                $price = $this->currency->format($result['one_price_total']);
             } else {
-                $price = $this->currency->format($result['price_total']) . $this->language->get('price_list') . $result['per_cent_of_all'] . '%';
+                $price = $this->currency->
+                    format($result['one_price_total']) .
+                    $this->language->get('price_list') .
+                    $result['one_percent'] . '%';
             }
 
             if ($this->config->get('config_seo_url')) {
-                $link = $server_host . $result['keyword']; //$this->model_module_page_order_bobs->,
+                $link = $server_host . $result['keyword']; // http://site.com/oplata-zakaz-99
             } else {
-                $link = $server_host . 'index.php?route=information/page_order_bobs&page_order_bobs_id=' . $result['page_id'];
+                $link = $server_host .
+                    'index.php?route=information/page_order_bobs&page_order_bobs_id=' .
+                    $result['page_id'];
             }
 
             $this->data['pages'][] = array(
@@ -426,14 +445,15 @@ class ControllerSalePageOrderBobs extends Controller
             'common/footer'
         );
         $this->response->setOutput($this->render());
+        $this->getForm();
     }
 
 
     /**
      * Visible Form Link or Page
      *
-     * @param        $array_post_parameter = null   The POST->modifierPostToArray()->  OR Table parameters
-     * @param int    $page_form = true Page or Link visible
+     * @param        $array_post_parameter    The POST->modifierPostToArray()->  OR Table parameters
+     * @param int    $page_form             Page or Link visible
      * @author  Bobs
      */
     protected function getForm($array_post_parameter = null, $page_form = true)
@@ -525,27 +545,30 @@ class ControllerSalePageOrderBobs extends Controller
         if ($page_order_parameters['get_order_id'] === null) {
             $page_order_parameters['get_order_id'] = '';
         }
-
+        //if isset array_post_parameter
         if (sizeof($array_post_parameter)) {
-            $this->data['get_order_id'] = $page_order_parameters['get_order_id'];
+            $this->data['get_order_id'] = $page_order_parameters['get_order_id']; //getParameters
             $this->data['order_id'] = $array_post_parameter['order_id'];
             $this->data['language_id'] = $array_post_parameter['language_id'];
             $this->data['currency_code'] = $array_post_parameter['currency_code'];
             $this->data['currency_code_check'] = $array_post_parameter['currency_code_check'];
-            $this->data['price_total'] = $array_post_parameter['price_total'];
+            $this->data['one_price_total'] = $array_post_parameter['one_price_total'];
             $this->data['price'] = $array_post_parameter['price'];
-            $this->data['per_cent_of_all'] = $array_post_parameter['per_cent_of_all'];
-            if ($array_post_parameter['price_total'] != $array_post_parameter['price']) {
-                $this->data['price_total_text'] = $this->language->get('price_total_text') . ' ' . $this->currency->format($array_post_parameter['price_total']);
+            $this->data['one_percent'] = $array_post_parameter['one_percent'];
+            if ($array_post_parameter['one_price_total'] != $array_post_parameter['price']) {
+                $this->data['price_total_text'] =
+                    $this->language->get('price_total_text') .
+                    ' ' .
+                    $this->currency->format($array_post_parameter['one_price_total']);
             }
             if ($page_form) {
                 $this->data['option_client_percent_default'] =
                     ($array_post_parameter['option_client_percent_default'] != null) ?
-                        $array_post_parameter['option_client_percent_default'] : 10;
+                        $array_post_parameter['option_client_percent_default'] : 100;
                 $this->data['option_client_percent'] =
                     ($array_post_parameter['option_client_percent'] != null) ?
                         unserialize($array_post_parameter['option_client_percent']) :
-                        $array_post_parameter['option_client_percent'];
+                        null;
             } else {
                 $this->data['option_client_percent_default'] =
                     ($page_order_parameters['option_client_percent_default'] != null) ?
@@ -607,9 +630,9 @@ class ControllerSalePageOrderBobs extends Controller
             $this->data['language_id'] = (int)$this->config->get('config_language_id');
             $this->data['currency_code'] = 'RUB';
 
-            $this->data['price_total'] = '1000';
+            $this->data['one_price_total'] = '1000';
             $this->data['price'] = '1000';
-            $this->data['per_cent_of_all'] = '100';
+            $this->data['one_percent'] = '100';
 
             $this->data['option_client_percent_default'] =
                 ($page_order_parameters['option_client_percent_default'] != null) ?
@@ -716,8 +739,8 @@ class ControllerSalePageOrderBobs extends Controller
         $array_post_parameter['name_page'] = sprintf($this->name_page_seo, $array_post_parameter['order_id']);
         $array_post_parameter['currency_code'] = $order['currency_code'];
         $array_post_parameter['price'] = $order['total'];
-        $array_post_parameter['price_total'] = $order['total'];
-        $array_post_parameter['per_cent_of_all'] = '100';
+        $array_post_parameter['one_price_total'] = $order['total'];
+        $array_post_parameter['one_percent'] = '100';
 
         if ($order['lastname'] != '') {
             if ($order['firstname'] != '') {
@@ -877,6 +900,10 @@ class ControllerSalePageOrderBobs extends Controller
                     return false;
                 }
             }
+            $order_alter_id = $this->request->post['order_alter_id'];
+            if (preg_match('/[^0-9]/', $order_alter_id) || $order_alter_id == '' || !is_numeric($order_alter_id)) {
+                $this->data['errors_warning'][] = $this->language->get('error_order_alter');
+            }
 
             $currency_code = $this->request->post['currency_code'];
             if (preg_match('/[^A-Za-z]/', $currency_code) || $currency_code == '') {
@@ -1034,36 +1061,36 @@ class ControllerSalePageOrderBobs extends Controller
         }
 
         //Percent
-        switch ($array_post_parameter['per_cent_of_all']) {
+        switch ($array_post_parameter['one_percent']) {
             case 1:
-                $array_post_parameter['per_cent_of_all'] = 10;
+                $array_post_parameter['one_percent'] = 10;
                 break;
             case 2:
-                $array_post_parameter['per_cent_of_all'] = 20;
+                $array_post_parameter['one_percent'] = 20;
                 break;
             case 3:
-                $array_post_parameter['per_cent_of_all'] = 30;
+                $array_post_parameter['one_percent'] = 30;
                 break;
             case 4:
-                $array_post_parameter['per_cent_of_all'] = 40;
+                $array_post_parameter['one_percent'] = 40;
                 break;
             case 5:
-                $array_post_parameter['per_cent_of_all'] = 50;
+                $array_post_parameter['one_percent'] = 50;
                 break;
             case 6:
-                $array_post_parameter['per_cent_of_all'] = 60;
+                $array_post_parameter['one_percent'] = 60;
                 break;
             case 7:
-                $array_post_parameter['per_cent_of_all'] = 70;
+                $array_post_parameter['one_percent'] = 70;
                 break;
             case 8:
-                $array_post_parameter['per_cent_of_all'] = 80;
+                $array_post_parameter['one_percent'] = 80;
                 break;
             case 9:
-                $array_post_parameter['per_cent_of_all'] = 90;
+                $array_post_parameter['one_percent'] = 90;
                 break;
             case 10:
-                $array_post_parameter['per_cent_of_all'] = 100;
+                $array_post_parameter['one_percent'] = 100;
                 break;
         }
         $array_post_parameter['option_client_percent'] = null;
@@ -1263,16 +1290,15 @@ class ControllerSalePageOrderBobs extends Controller
     /**
      * Visible form
      *
-     * @param int    $page_form   The visible page form or links form
+     * @param int $page_form The visible page form or links form
      *
      * @author  Bobs
      */
-    private function setUpdateForm($page_form=null)
+    private function setUpdateForm($page_form = null)
     {
         $array_post_parameter = $this->modifierPostToArray($this->request->post); //Создаем массив
         $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters
-        if(isset($page_form))
-        {
+        if (isset($page_form)) {
             $this->getForm($array_post_parameter, $page_form);
         } else {
             $this->getForm($array_post_parameter);

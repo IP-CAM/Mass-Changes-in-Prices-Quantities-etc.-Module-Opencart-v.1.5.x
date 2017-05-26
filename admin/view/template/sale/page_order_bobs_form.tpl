@@ -125,6 +125,20 @@
                     </td>
                 </tr>
                 <tr>
+                    <td><?php echo $type_of_presentation_label; ?></td>
+                    <td>
+                        <input type="radio" name="type_of_presentation" value="0" <?php if
+                        ($type_of_presentation==0) { ?> checked="checked <?php } ?>" />
+                        <?php echo $one_visible_label; ?>
+                        <input type="radio" name="type_of_presentation" value="1" <?php if
+                        ($type_of_presentation==1) { ?> checked="checked <?php } ?>" />
+                        <?php echo $several_visible_label; ?>
+                        <input type="radio" name="type_of_presentation" value="2" <?php if
+                        ($type_of_presentation==2) { ?> checked="checked <?php } ?>" />
+                        <?php echo $one_visible_label; ?>
+                    </td>
+                </tr>
+                <tr>
                     <td><span class="required">*</span><span id="price_label"><?php echo $price_label; ?></span></td>
                     <td>
                         <input type="text" name="price" value="<?php echo $price; ?>"/>
