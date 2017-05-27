@@ -42,10 +42,9 @@
     </div>
     <div class="content">
         <form action="<?php echo $action ?>" method="post" accept-charset="utf-8" id="form_link">
-            <input id="terminal_id" type="hidden" name="terminal_id" value="0"> <!-- //( terminal_id ) 0 - save page, 1 - to make the data from the number order, 2 - create link, 3 - to make the data from the number order (form link)-->
-            <input type="hidden" name="language_id" value="<?php echo $language_id; ?>">
+            <input id="terminal_id" type="hidden" name="terminal_id" value="0">
             <input type="hidden" name="page_host" id="page_host" value="<?php echo $page_host; ?>">
-            <input type="hidden" name="price_total" id="price_total" value="<?php echo $price_total; ?>">
+            <input type="hidden" name="one_price_total" id="one_price_total" value="<?php echo $one_price_total; ?>">
             <TABLE class="form">
                 <tr>
                     <td><? echo $get_order_id_label; ?></td>
@@ -95,7 +94,6 @@
                     <td>
                         <input type="text" id="name_page0" name="name_page" value="<? echo $name_page; ?>" disabled/>
                         <input type="hidden" id="name_page1" name="name_page" value="<? echo $name_page; ?>"/>
-
                         <a id="name_page_button" class="button" style="margin-left: 10px">
                             <?php echo $change_name_page_label; ?></a>
                     </td>
@@ -108,8 +106,9 @@
                 <tr>
                     <td><? echo $order_alter_id_label; ?></td>
                     <td>
-                        <input type="text" id="order_alter_id" name="order_alter_id" value="<?php echo $order_alter_id; ?>"/>
-                        <input type="checkbox" name="order_alter_check" id="order_alter_check" <?php if($order_alter_check) { ?> checked <?php }?>>
+                        <input type="text" id="order_site_id" name="order_site_id" value="<?php echo $order_site_id; ?>"/>
+                        <input type="checkbox" name="order_site_check" id="order_site_check"
+                                <?php if($order_site_check) { ?> checked <?php }?>>
                         <?php echo $order_alter_check_label; ?>
                     </td>
                 </tr>
@@ -119,42 +118,40 @@
                     <td>
                         <input type="text" name="currency_code" value="<?php echo $currency_code; ?>"/>
                         <?php if($page_form){ ?>
-                        <input type="checkbox" name="currency_code_check" id="currency_code_check" <?php if($currency_code_check) { ?> checked <?php }?>>
-                        <?php echo $currency_code_check_label; ?>
+                            <input type="checkbox" name="currency_code_check" id="currency_code_check"
+                            <?php if($currency_code_check) { ?> checked <?php }?>>
+                            <?php echo $currency_code_check_label; ?>
                         <?php } ?>
                     </td>
                 </tr>
                 <tr>
                     <td><?php echo $type_of_presentation_label; ?></td>
                     <td>
-                        <input type="radio" name="type_of_presentation" value="0" <?php if
-                        ($type_of_presentation==0) { ?> checked="checked <?php } ?>" />
+                        <input type="radio" name="type_of_presentation" value="0"
+                        <?php if($type_of_presentation==0) { ?> checked="checked <?php } ?>" />
                         <?php echo $one_visible_label; ?>
-                        <input type="radio" name="type_of_presentation" value="1" <?php if
-                        ($type_of_presentation==1) { ?> checked="checked <?php } ?>" />
-                        <?php echo $several_visible_label; ?>
-                        <input type="radio" name="type_of_presentation" value="2" <?php if
-                        ($type_of_presentation==2) { ?> checked="checked <?php } ?>" />
-                        <?php echo $one_visible_label; ?>
+                        <input type="radio" name="type_of_presentation" value="1"
+                        <?php if($type_of_presentation==1) { ?> checked="checked <?php } ?>" />
+                        <?php echo $several_radio_visible_label; ?>
+                        <input type="radio" name="type_of_presentation" value="2"
+                        <?php if($type_of_presentation==2) { ?> checked="checked <?php } ?>" />
+                        <?php echo $several_link_visible_label; ?>
                     </td>
                 </tr>
                 <tr>
                     <td><span class="required">*</span><span id="price_label"><?php echo $price_label; ?></span></td>
                     <td>
                         <input type="text" name="price" value="<?php echo $price; ?>"/>
-                        <select name="per_cent_of_all" id="per_cent_of_all_select">
-                            <option value="1" <?php if($per_cent_of_all==10) { ?> selected="selected"<?php } ?>>10%</option>
-                            <option value="2" <?php if($per_cent_of_all==20) { ?> selected="selected"<?php } ?>>20%</option>
-                            <option value="3" <?php if($per_cent_of_all==30) { ?> selected="selected"<?php } ?>>30%</option>
-                            <option value="4" <?php if($per_cent_of_all==40) { ?> selected="selected"<?php } ?>>40%</option>
-                            <option value="5" <?php if($per_cent_of_all==50) { ?> selected="selected"<?php } ?>>50%</option>
-                            <option value="6" <?php if($per_cent_of_all==60) { ?> selected="selected"<?php } ?>>60%</option>
-                            <option value="7" <?php if($per_cent_of_all==70) { ?> selected="selected"<?php } ?>>70%</option>
-                            <option value="8" <?php if($per_cent_of_all==80) { ?> selected="selected"<?php } ?>>80%</option>
-                            <option value="9" <?php if($per_cent_of_all==90) { ?> selected="selected"<?php } ?>>90%</option>
-                            <option value="10" <?php if($per_cent_of_all==100) { ?> selected="selected"<?php } ?>>100%</option>
+                        <select name="one_percent" id="per_cent_of_all_select">
+                            <?php for ($i = 10; $i <= 100; $i+=10) { ?>
+                                <option value="<?php echo $i ?>"
+                                <?php if($one_percent==$i) { ?> selected="selected" <?php } ?> ><?php echo $i ?>%
+                                </option>
+                            <?php } ?>
                         </select>
-                        <span id="per_cent_of_all_text"><?php if(isset($price_total_text)) { echo $price_total_text; } ?></span>
+                        <span id="per_cent_of_all_text">
+                            <?php if(isset($price_total_text)) { echo $price_total_text; } ?>
+                        </span>
                     </td>
                 </tr>
                 <?php if($page_form){ ?>
@@ -164,17 +161,19 @@
                         <a  id="expand_down"></a>
                         <div id="option_client_percent_block">
                             <?php for ($i = 10; $i <= 100; $i+=10) { ?>
-                            <p><span>
-                                <?php echo $option_client_percent_default_label; ?>
-                            </span>
-                                <input type="radio" name="option_client_percent_default" value="<?php echo $i ?>" <?php if($option_client_percent_default==$i){ ?> checked="checked" <?php } ?> />
-                                <input type="checkbox" name="option_client_percent[]" value="<?php echo $i ?>" <?php
-                            if($option_client_percent!=null) {
-                            if(array_search($i,$option_client_percent)!==false) { ?> checked="checked"<?php } } ?>><?php echo $i ?>%
+                            <p>
+                                <span>
+                                    <?php echo $option_client_percent_default_label; ?>
+                                </span>
+                                <input type="radio" name="several_percent_default" value="<?php echo $i ?>"
+                                        <?php if($several_percent_default==$i){ ?> checked="checked" <?php } ?> />
+                                <input type="checkbox" name="several_percent[]" value="<?php echo $i ?>" <?php
+                                    if($several_percent!=null) {
+                                    if(array_search($i,$several_percent)!==false) { ?> checked="checked"<?php } } ?>>
+                                <?php echo $i ?>%
                             </p>
                             <?php } ?>
                         </div>
-
                     </td>
                 </tr>
                 <?php } ?>
@@ -226,10 +225,6 @@
                     <td><?php echo $key_secret_pay2pay_label; ?></td>
                     <td><input type="text" name="pay2pay_key_secret" value="<?php echo $pay2pay_key_secret; ?>"/></td>
                 </tr>
-               <!-- <tr>
-                    <td><?php echo $test_mode_pay2pay_label; ?></td>
-                    <td><input type="text" name="pay2pay_test_mode" value="<?php echo $pay2pay_test_mode; ?>"/></td>
-                </tr> -->
                 <tr>
                     <td><?php echo $test_mode_pay2pay_label; ?></td>
                     <td>
@@ -302,7 +297,8 @@
                 </tr>
             </TABLE>
 
-            <div <?php if(!$page_form) { echo 'hidden'; } ?>>
+            <?php if($page_form) { ?>
+            <div>
                 <input type="checkbox"
                        name="alter_payment_check"
                        id="alter_payment_check"
@@ -320,6 +316,7 @@
                     </td>
                 </tr>
             </TABLE>
+            <?php } ?>
         </form>
 
 
@@ -333,22 +330,22 @@
 
 <script type="text/javascript">
 
-    var page_form = <?php echo $page_form; ?>;
-    var pay2pay_check = <?php echo $pay2pay_check; ?>;
-    var robokassa_check =<?php echo $robokassa_check;?>;
-    var interkassa_check =<?php echo $interkassa_check;?>;
-    var alter_payment_check =<?php echo $alter_payment_check;?>;
+    var page_form = '<?php echo $page_form; ?>';
+    var pay2pay_check = '<?php echo $pay2pay_check; ?>';
+    var robokassa_check ='<?php echo $robokassa_check;?>';
+    var interkassa_check ='<?php echo $interkassa_check;?>';
+    var alter_payment_check ='<?php echo $alter_payment_check;?>';
     var name_page_seo ='<?php echo $name_page_seo ?>';
     var price_new_label='<?php echo $price_new_label ?>';
     var price_label='<?php echo $price_label ?>';
-    var price_total='<?php echo $price_total; ?>';
-    var option_client_percent='<?php  $e=($option_client_percent!=null) ? 1 : 0; echo $e; ?>';
+    var one_price_total='<?php echo $one_price_total; ?>';
+    var one_percent='<?php  $e=($one_percent!=null) ? 1 : 0; echo $e; ?>';
     var old_price;
     var checkFableOptionPercent;
     var option_client_down_label='<?php echo $option_client_down_label; ?>';
     var option_client_expand_label='<?php echo $option_client_expand_label; ?>';
     $(document).ready(function () {
-        if(option_client_percent==1)
+        if(one_percent==1)
         {
             $('#expand_down').text(option_client_down_label);
             checkFableOptionPercent=true;
@@ -406,6 +403,12 @@
                 return false;
             }
         });
+        $('[name = "order_site_id"]').keypress(function(key) {
+            if(key.charCode < 48 || key.charCode > 57) {
+                return false;
+            }
+        });
+
         $('[name = "price"]').keypress(function(key) {
             if( key.charCode!=46 && (key.charCode < 48 || key.charCode > 57)) {
                 return false;
@@ -432,8 +435,8 @@
                             $('#price_label').text(price_label);
                             $('[name="price"]').val(json.price);
                             $('#per_cent_of_all_text').text(json.price_total_text);
-                            price_total=json.price;
-                            $('#price_total').val(json.price);
+                            one_price_total=json.price;
+                            $('#one_price_total').val(json.price);
                         }
                     });
                 }
@@ -453,14 +456,14 @@
                 $.ajax({
                     url: "<?php echo $post_link; ?>",
                     dataType: 'json',
-                    data: 'price=' + price_total + '&percent=' + $('#per_cent_of_all_select option:selected').text() + '&description_order=' + $('#description_order').val(),
+                    data: 'price=' + one_price_total + '&percent=' + $('#per_cent_of_all_select option:selected').text() + '&description_order=' + $('#description_order').val(),
                     type:'post',
                     success: function(json){
                         // Здесь мы получаем данные, отправленные сервером и выводим их на экран.
                         $('#description_order').val(json.description_order);
                         if($('#per_cent_of_all_select option:selected').text()=='100%') {
                             $('#price_label').text(price_label);
-                            $('[name="price"]').val(price_total);
+                            $('[name="price"]').val(one_price_total);
                             $('#per_cent_of_all_text').text(json.price_total_text);
                         }else
                         {

@@ -155,7 +155,7 @@ class ControllerModulePageOrderBobs extends Controller
         `order_site_id` = NULL ,
         `currency_code` ='RUB' ,
         `currency_code_check` =0,
-        `type_of_presentation` =1 ,
+        `type_of_presentation` =0 ,
         `price` =1000 ,
         `receiver_of_product` ='Имя и Фамилия покупателя',
         `description_order` = 'Описание заказа' ,

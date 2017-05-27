@@ -128,8 +128,8 @@ class ControllerSalePageOrderBobs extends Controller
         $this->document->setTitle($this->language->get('heading_title'));
 
         $this->load->model('sale/page_order_bobs');
-
-        $this->getForm();
+        $page = $this->model_sale_page_order_bobs->getParameters();
+        $this->getForm($page);
     }
 
     /**
@@ -164,7 +164,7 @@ class ControllerSalePageOrderBobs extends Controller
 
         if (isset($this->request->post['selected']) && $this->validateDelete()) {
             foreach ($this->request->post['selected'] as $page_id) {
-                $this->model_sale_page_order_bobs->deleteOrderPage($page_id); //Delete strong BD
+                $this->model_sale_page_order_bobs->deletePage($page_id); //Delete strong BD
             }
 
             $this->session->data['success'] = $this->language->get('page_delete_label'); //Messange
@@ -212,7 +212,8 @@ class ControllerSalePageOrderBobs extends Controller
         $this->load->model('sale/order');
 
         if (empty($this->request->post)) {
-            $this->getForm();
+            $page = $this->model_sale_page_order_bobs->getPageByPage($this->request->get['page_id']);
+            $this->getForm($page);
             return;
         }
         if ($this->validateForm()) {
@@ -221,8 +222,8 @@ class ControllerSalePageOrderBobs extends Controller
             } elseif ($this->request->post['terminal_id'] == 3) {
                 $this->getOrderId(3);
             } elseif ($this->request->post['terminal_id'] == 0) {
-                $array_post_parameter = $this->modifierPostToArray($this->request->post); //Create array
-                if ($this->addAndUpdatePage($array_post_parameter)) {
+                $array_post_parameter = $this->modifierAndAddInForm($this->request->post); //Create array
+                if ($this->savePage($array_post_parameter)) {
                     $array_post_parameter['get_order_id'] = null;
                     $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters
                     $this->cache->delete('seo_pro'); // clear cache seo
@@ -231,11 +232,9 @@ class ControllerSalePageOrderBobs extends Controller
                     if (isset($this->request->get['sort'])) {
                         $url .= '&sort=' . $this->request->get['sort'];
                     }
-
                     if (isset($this->request->get['order'])) {
                         $url .= '&order=' . $this->request->get['order'];
                     }
-
                     if (isset($this->request->get['page'])) {
                         $url .= '&page=' . $this->request->get['page'];
                     }
@@ -247,7 +246,7 @@ class ControllerSalePageOrderBobs extends Controller
                 }
 
             } elseif ($this->request->post['terminal_id'] == 2) {
-                $array_post_parameter = $this->modifierPostToArray($this->request->post); //Создаем массив
+                $array_post_parameter = $this->modifierAndAddInForm($this->request->post); //Создаем массив
                 $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters
                 $array_link = $this->getLink($array_post_parameter);  //Create link
                 $array_post_parameter = array_merge($array_post_parameter, $array_link);
@@ -325,31 +324,12 @@ class ControllerSalePageOrderBobs extends Controller
         //LINKS END
 
         //PAGINATION BEGIN
-        if (isset($this->request->get['sort'])) {
-            $sort = $this->request->get['sort'];
-        } else {
-            $sort = 'opd.page_id';
-        }
-
-        if (isset($this->request->get['order'])) {
-            $order = $this->request->get['order'];
-        } else {
-            $order = 'ASC';
-        }
-
         if (isset($this->request->get['page'])) {
             $page = $this->request->get['page'];
         } else {
             $page = 1;
         }
-
-        $data = array(
-            'sort' => $sort,
-            'order' => $order,
-            'start' => ($page - 1) * $this->config->get('config_admin_limit'),
-            'limit' => $this->config->get('config_admin_limit')
-        );
-        $page_order_total = $this->model_sale_page_order_bobs->getTotalOrderPageCount();
+        $page_order_count = $this->model_sale_page_order_bobs->getOrderPageCount();
         $url = '';
 
         if (isset($this->request->get['sort'])) {
@@ -361,7 +341,7 @@ class ControllerSalePageOrderBobs extends Controller
         }
 
         $pagination = new Pagination();     //Показано с 1 по 4 из 4 (всего страниц: 1)
-        $pagination->total = $page_order_total;
+        $pagination->total = $page_order_count;
         $pagination->page = $page;
         $pagination->limit = $this->config->get('config_admin_limit');
         $pagination->text = $this->language->get('text_pagination');
@@ -370,10 +350,27 @@ class ControllerSalePageOrderBobs extends Controller
         $this->data['pagination'] = $pagination->render();
         //PAGINATION END
 
-        $this->data['sort'] = $sort;
-        $this->data['order'] = $order;
 
         //TABLE PARAMETER BEGIN
+        if (isset($this->request->get['sort'])) {
+            $sort = $this->request->get['sort'];
+        } else {
+            $sort = 'opd.page_id';
+        }
+
+        if (isset($this->request->get['order'])) {
+            $order = $this->request->get['order'];
+        } else {
+            $order = 'ASC';
+        }
+        $this->data['sort'] = $sort;
+        $this->data['order'] = $order;
+        $data = array(
+            'sort' => $sort,
+            'order' => $order,
+            'start' => ($page - 1) * $this->config->get('config_admin_limit'),
+            'limit' => $this->config->get('config_admin_limit')
+        );
         $results = $this->model_sale_page_order_bobs->getPagesOrder($data);
         $server_host = 'http://' . $_SERVER['HTTP_HOST'] . '/';
         $this->data['pages'] = array();
@@ -445,18 +442,17 @@ class ControllerSalePageOrderBobs extends Controller
             'common/footer'
         );
         $this->response->setOutput($this->render());
-        $this->getForm();
     }
 
 
     /**
      * Visible Form Link or Page
      *
-     * @param        $array_post_parameter    The POST->modifierPostToArray()->  OR Table parameters
-     * @param int    $page_form             Page or Link visible
+     * @param array $array_post_parameter The POST->modifierAndAddInForm()->  OR Table parameters
+     * @param bool  $page_form            Page or Link visible
      * @author  Bobs
      */
-    protected function getForm($array_post_parameter = null, $page_form = true)
+    protected function getForm($array_page, $page_form = true)
     {
 
         $this->data['breadcrumbs'] = array();
@@ -475,10 +471,9 @@ class ControllerSalePageOrderBobs extends Controller
         $this->data['heading_title'] = $this->language->get('heading_title');
         $this->data['heading_title_link'] = $this->language->get('heading_title_link');
 
-        //default
+
         $this->data['button_save'] = $this->language->get('button_save');
         $this->data['button_cancel'] = $this->language->get('button_cancel');
-        //default
         $this->data['button_get_link_label'] = $this->language->get('button_get_link_label');
         $this->data['text_yes'] = $this->language->get('text_yes');
         $this->data['text_no'] = $this->language->get('text_no');
@@ -492,6 +487,11 @@ class ControllerSalePageOrderBobs extends Controller
         $this->data['order_alter_id_label'] = $this->language->get('order_alter_id_label');
         $this->data['currency_code_check_label'] = $this->language->get('currency_code_check_label');
         $this->data['currency_code_label'] = $this->language->get('currency_code');
+        $this->data['type_of_presentation_label'] = $this->language->get('type_of_presentation_label');
+        $this->data['one_visible_label'] = $this->language->get('one_visible_label');
+        $this->data['several_radio_visible_label'] = $this->language->get('several_radio_visible_label');
+        $this->data['several_link_visible_label'] = $this->language->get('several_link_visible_label');
+
         $this->data['price_label'] = $this->language->get('price_label');
         $this->data['price_new_label'] = $this->language->get('price_new_label');
         $this->data['option_client_percent_label'] = $this->language->get('option_client_percent_label');
@@ -541,155 +541,88 @@ class ControllerSalePageOrderBobs extends Controller
         $this->data['page_host'] = 'http://' . $_SERVER['HTTP_HOST'] . '/'; //Name site
         $this->data['name_page_seo'] = $this->name_page_seo;
 
-        $page_order_parameters = $this->model_sale_page_order_bobs->getParameters();//Get parameters
-        if ($page_order_parameters['get_order_id'] === null) {
-            $page_order_parameters['get_order_id'] = '';
-        }
-        //if isset array_post_parameter
-        if (sizeof($array_post_parameter)) {
-            $this->data['get_order_id'] = $page_order_parameters['get_order_id']; //getParameters
-            $this->data['order_id'] = $array_post_parameter['order_id'];
-            $this->data['language_id'] = $array_post_parameter['language_id'];
-            $this->data['currency_code'] = $array_post_parameter['currency_code'];
-            $this->data['currency_code_check'] = $array_post_parameter['currency_code_check'];
-            $this->data['one_price_total'] = $array_post_parameter['one_price_total'];
-            $this->data['price'] = $array_post_parameter['price'];
-            $this->data['one_percent'] = $array_post_parameter['one_percent'];
-            if ($array_post_parameter['one_price_total'] != $array_post_parameter['price']) {
-                $this->data['price_total_text'] =
-                    $this->language->get('price_total_text') .
-                    ' ' .
-                    $this->currency->format($array_post_parameter['one_price_total']);
-            }
-            if ($page_form) {
-                $this->data['option_client_percent_default'] =
-                    ($array_post_parameter['option_client_percent_default'] != null) ?
-                        $array_post_parameter['option_client_percent_default'] : 100;
-                $this->data['option_client_percent'] =
-                    ($array_post_parameter['option_client_percent'] != null) ?
-                        unserialize($array_post_parameter['option_client_percent']) :
-                        null;
-            } else {
-                $this->data['option_client_percent_default'] =
-                    ($page_order_parameters['option_client_percent_default'] != null) ?
-                        $page_order_parameters['option_client_percent_default'] : 100;
-
-                $this->data['option_client_percent'] =
-                    ($page_order_parameters['option_client_percent'] != null) ?
-                        unserialize($page_order_parameters['option_client_percent']) :
-                        $page_order_parameters['option_client_percent'];
-            }
-            $this->data['receiver_of_product'] = $array_post_parameter['receiver_of_product'];
-            $this->data['description_order'] = $array_post_parameter['description_order'];
-            $this->data['delivery_address'] = $array_post_parameter['delivery_address'];
-            $this->data['delivery_method'] = $array_post_parameter['delivery_method'];
-            $this->data['notes'] = $array_post_parameter['notes'];
-
-            if (isset($array_post_parameter['notes_client'])) {
-                $this->data['notes_client'] = $array_post_parameter['notes_client'];
-            }
-
-            $this->data['pay2pay_check'] = $array_post_parameter['pay2pay_check'];
-            $this->data['pay2pay_identifier_shop'] = $array_post_parameter['pay2pay_identifier_shop'];
-            $this->data['pay2pay_key_secret'] = $array_post_parameter['pay2pay_key_secret'];
-            $this->data['pay2pay_test_mode'] = $array_post_parameter['pay2pay_test_mode'];
-
-            $this->data['robokassa_check'] = $array_post_parameter['robokassa_check'];
-            $this->data['robokassa_identifier_shop'] = $array_post_parameter['robokassa_identifier_shop'];
-            $this->data['robokassa_key_secret'] = $array_post_parameter['robokassa_key_secret'];
-            $this->data['robokassa_test_mode'] = $array_post_parameter['robokassa_test_mode'];
-
-            $this->data['interkassa_check'] = $array_post_parameter['interkassa_check'];
-            $this->data['interkassa_identifier_shop'] = $array_post_parameter['interkassa_identifier_shop'];
-            $this->data['interkassa_test_mode'] = $array_post_parameter['interkassa_test_mode'];
-            if ($page_form) {
-                $this->data['alter_payment_check'] = $array_post_parameter['alter_payment_check'];
-                $this->data['alter_payment_text'] = $array_post_parameter['alter_payment_text'];
-            } else {
-                $this->data['alter_payment_check'] = $page_order_parameters['alter_payment_check'];
-                $this->data['alter_payment_text'] = $page_order_parameters['alter_payment_text'];
-            }
-
-            if ($page_form) {
-                $this->data['name_page'] = $array_post_parameter['name_page'];
-                $this->data['order_alter_check'] = $array_post_parameter['order_alter_check'];
-                $this->data['order_alter_id'] = $array_post_parameter['order_alter_id'];
-            } else {
-                $this->data['link_pay2pay'] = $array_post_parameter['link_pay2pay'];
-                $this->data['link_robokassa'] = $array_post_parameter['link_robokassa'];
-                $this->data['link_interkassa'] = $array_post_parameter['link_interkassa'];
-            }
-
-
-        } else {
-
-            $this->data['get_order_id'] = '';
-            $this->data['order_id'] = "99";
-            $this->data['order_alter_check'] = 1;
-            $this->data['order_alter_id'] = '';
-            $this->data['language_id'] = (int)$this->config->get('config_language_id');
-            $this->data['currency_code'] = 'RUB';
-
-            $this->data['one_price_total'] = '1000';
-            $this->data['price'] = '1000';
-            $this->data['one_percent'] = '100';
-
-            $this->data['option_client_percent_default'] =
-                ($page_order_parameters['option_client_percent_default'] != null) ?
-                    $page_order_parameters['option_client_percent_default'] : 100;
-
-            $this->data['option_client_percent'] =
-                ($page_order_parameters['option_client_percent'] != null &&
-                    $page_order_parameters['option_client_percent'] != '') ?
-                    unserialize($page_order_parameters['option_client_percent']) : null;
-
-            $this->data['receiver_of_product'] = 'Вася Пупкин';
-            $this->data['description_order'] = 'описание заказа';
-            $this->data['delivery_address'] = '';
-            $this->data['delivery_method'] = '';
-            $this->data['notes'] = '';
-
-            $this->data['currency_code_check'] = $page_order_parameters['currency_code_check'];
-
-            $this->data['pay2pay_check'] = $page_order_parameters['pay2pay_check'];
-            $this->data['pay2pay_identifier_shop'] = $page_order_parameters['pay2pay_identifier_shop'];
-            $this->data['pay2pay_key_secret'] = $page_order_parameters['pay2pay_key_secret'];
-            $this->data['pay2pay_test_mode'] = $page_order_parameters['pay2pay_test_mode'];
-
-            $this->data['robokassa_check'] = $page_order_parameters['robokassa_check'];
-            $this->data['robokassa_identifier_shop'] = $page_order_parameters['robokassa_identifier_shop'];
-            $this->data['robokassa_key_secret'] = $page_order_parameters['robokassa_key_secret'];
-            $this->data['robokassa_test_mode'] = $page_order_parameters['robokassa_test_mode'];
-
-            $this->data['interkassa_check'] = $page_order_parameters['interkassa_check'];
-            $this->data['interkassa_identifier_shop'] = $page_order_parameters['interkassa_identifier_shop'];
-            $this->data['interkassa_test_mode'] = $page_order_parameters['interkassa_test_mode'];
-
-            $this->data['alter_payment_check'] = $page_order_parameters['alter_payment_check'];
-            $this->data['alter_payment_text'] = $page_order_parameters['alter_payment_text'];
-
-            $this->data['name_page'] = sprintf($this->name_page_seo, $this->data['order_id']);
-
-
-            $this->data['link_pay2pay'] = $this->language->get('link_pay2pay');
-            $this->data['link_robokassa'] = $this->language->get('link_robokassa');
-            $this->data['link_interkassa'] = $this->language->get('link_interkassa');
-
-
+        if ($array_page['get_order_id'] === null) {
+            $array_page['get_order_id'] = '';
         }
 
 
-        //for undo
+        $this->data['get_order_id'] = $array_page['get_order_id']; //getParameters
+        $this->data['order_id'] = $array_page['order_id'];
+        if ($page_form) {
+            $this->data['order_site_check'] = $array_page['order_site_check'];
+            $this->data['order_site_id'] = $array_page['order_site_id'];
+        }
+        if ($page_form) {
+            if (isset($array_page['name_page'])) {
+                $this->data['name_page'] = $array_page['name_page'];
+            } else {
+                $this->data['name_page'] = sprintf($this->name_page_seo, $array_page['order_id']);
+            }
+        }
+        $this->data['currency_code'] = $array_page['currency_code'];
+        $this->data['currency_code_check'] = $array_page['currency_code_check'];
+        $this->data['type_of_presentation'] = $array_page['currency_code_check'];
+
+
+        $this->data['one_price_total'] = $array_page['one_price_total'];
+        $this->data['one_percent'] = $array_page['one_percent'];
+        if ($array_page['one_price_total'] != $array_page['price']) {
+            $this->data['price_total_text'] =
+                $this->language->get('price_total_text') .
+                ' ' .
+                $this->currency->format($array_page['one_price_total']);
+        }
+
+        $this->data['several_percent_default'] =
+            ($array_page['several_percent_default'] != null) ?
+                $array_page['several_percent_default'] : 100;
+        $this->data['several_percent'] =
+            ($array_page['several_percent'] != null) ?
+                unserialize($array_page['several_percent']) :
+                null;
+
+        $this->data['price'] = $array_page['price'];
+        $this->data['receiver_of_product'] = $array_page['receiver_of_product'];
+        $this->data['description_order'] = $array_page['description_order'];
+        $this->data['delivery_address'] = $array_page['delivery_address'];
+        $this->data['delivery_method'] = $array_page['delivery_method'];
+        $this->data['notes'] = $array_page['notes'];
+
+        if (isset($array_page['notes_client'])) {
+            $this->data['notes_client'] = $array_page['notes_client'];
+        }
+
+        $this->data['pay2pay_check'] = $array_page['pay2pay_check'];
+        $this->data['pay2pay_identifier_shop'] = $array_page['pay2pay_identifier_shop'];
+        $this->data['pay2pay_key_secret'] = $array_page['pay2pay_key_secret'];
+        $this->data['pay2pay_test_mode'] = $array_page['pay2pay_test_mode'];
+
+        $this->data['robokassa_check'] = $array_page['robokassa_check'];
+        $this->data['robokassa_identifier_shop'] = $array_page['robokassa_identifier_shop'];
+        $this->data['robokassa_key_secret'] = $array_page['robokassa_key_secret'];
+        $this->data['robokassa_test_mode'] = $array_page['robokassa_test_mode'];
+
+        $this->data['interkassa_check'] = $array_page['interkassa_check'];
+        $this->data['interkassa_identifier_shop'] = $array_page['interkassa_identifier_shop'];
+        $this->data['interkassa_test_mode'] = $array_page['interkassa_test_mode'];
+        $this->data['alter_payment_check'] = $array_page['alter_payment_check'];
+        $this->data['alter_payment_text'] = $array_page['alter_payment_text'];
+        if (!$page_form) {
+            $this->data['link_pay2pay'] = $array_page['link_pay2pay'];
+            $this->data['link_robokassa'] = $array_page['link_robokassa'];
+            $this->data['link_interkassa'] = $array_page['link_interkassa'];
+        }
+
+        $this->gagForm($this->data);
+
+        //LINK
         $url = '';
-
         if (isset($this->request->get['sort'])) {
             $url .= '&sort=' . $this->request->get['sort'];
         }
-
         if (isset($this->request->get['order'])) {
             $url .= '&order=' . $this->request->get['order'];
         }
-
         if (isset($this->request->get['page'])) {
             $url .= '&page=' . $this->request->get['page'];
         }
@@ -701,10 +634,8 @@ class ControllerSalePageOrderBobs extends Controller
             $this->data['action'] = $this->url->link('sale/page_order_bobs/terminal',
                 'token=' . $this->session->data['token'] . '&page_id=' . $this->request->get['page_id'] . $url, 'SSL');
         }
-
         $this->data['cancel'] = $this->url->link('sale/page_order_bobs',
             'token=' . $this->session->data['token'] . $url, 'SSL');
-
         $this->data['post_link'] = 'index.php?route=sale/page_order_bobs/post&token=' . $this->session->data['token'];
 
         $this->template = 'sale/page_order_bobs_form.tpl';
@@ -712,30 +643,34 @@ class ControllerSalePageOrderBobs extends Controller
             'common/header',
             'common/footer'
         );
-
         $this->response->setOutput($this->render());
     }
 
-    protected function getOrderId(
-        $id_terminal
-    ) //( terminal_id ) !0 - save page, 1 - to make the data from the number order, !2 - create link, 3 - to make the data from the number order (form link)
+
+    /**
+     * Enter the order of the website in the form (page form)
+     *  $id_terminal :
+     *  0 - save page,
+     *  1 - to make the data from the number order,
+     *  2 - create link,
+     *  3 - to make the data from the number order (form link)
+     * @param int $id_terminal
+     * @author  Bobs
+     */
+    private function getOrderId($id_terminal)
     {
-
-
         $get_order_id = 0;
         if (isset($this->request->post['get_order_id'])) {
             $get_order_id = $this->request->post['get_order_id'];
         }
 
         $order = $this->model_sale_order->getOrder($get_order_id);
-
-
         $order_products = $this->model_sale_order->getOrderProducts($get_order_id);
 
-        $array_post_parameter = $this->modifierPostToArray($this->request->post); //Создаем массив
+        $array_post_parameter = $this->modifierAndAddInForm($this->request->post); //Создаем массив
         $array_post_parameter['order_id'] = $order['order_id'];
-        $array_post_parameter['order_alter_id'] = $order['order_id'];
-        $array_post_parameter['order_alter_check'] = 1;
+        $array_post_parameter['order_site_id'] = $order['order_id'];
+        $array_post_parameter['order_site_check'] = 1;
         $array_post_parameter['name_page'] = sprintf($this->name_page_seo, $array_post_parameter['order_id']);
         $array_post_parameter['currency_code'] = $order['currency_code'];
         $array_post_parameter['price'] = $order['total'];
@@ -769,9 +704,19 @@ class ControllerSalePageOrderBobs extends Controller
                 $description_order = $description_order . $order_product['name'];
             }
             $description_order .= ': ';
-            $description_order .= $this->language->get('quantity') . ' ' . $order_product['quantity'] . ', ';
-            $description_order .= $this->language->get('price') . ' ' . $this->currency->format($order_product['price']) . ', ';
-            $description_order .= $this->language->get('total') . ' ' . $this->currency->format($order_product['total']) . "\n\t";
+            $description_order .= $this->language->get('quantity');
+            $description_order .= ' ';
+            $description_order .= $order_product['quantity'];
+            $description_order .= ', ';
+            $description_order .= $this->language->get('price');
+            $description_order .= ' ';
+            $description_order .= $this->currency->format($order_product['price']);
+            $description_order .= ', ';
+            $description_order .= $this->language->get('total');
+            $description_order .= ' ';
+            $description_order .= $this->currency->format($order_product['total']);
+            $description_order .= "\n\t";
+
             foreach ($order_options as $key => $order_option) {
                 $description_order .= ' ' . $order_option['name'] . ': ' . $order_option['value'];
                 if ($key < count($order_options) - 1) {
@@ -788,27 +733,29 @@ class ControllerSalePageOrderBobs extends Controller
         $array_post_parameter['delivery_method'] = '';
 
         if ($order['comment'] != '') {
-            $array_post_parameter['notes_client'] = $this->language->get('notes_client_of_order') . ' ' . $order['comment'];
+            $array_post_parameter['notes_client'] = $this->language->get('notes_client_of_order') .
+                ' ' . $order['comment'];
         }
-
-        $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters, save get_page_id
+        //$this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters, save get_page_id
         if ($id_terminal == 1) {
             $this->getForm($array_post_parameter);
         } elseif ($id_terminal == 3) {
             $array_post_parameter = $this->modifierLinkNull($array_post_parameter);
             $this->getForm($array_post_parameter, false);
         }
-
-
     }
 
+    /**
+     * Validate delete user (page list)
+     * @return bool
+     * @author  Bobs
+     */
 
     private function validateDelete()
     {
         if (!$this->user->hasPermission('modify', 'sale/page_order_bobs')) {
             $this->error['warning'] = $this->language->get('error_permission');
         }
-
         if (!$this->error) {
             return true;
         } else {
@@ -817,193 +764,189 @@ class ControllerSalePageOrderBobs extends Controller
     }
 
 
-    private function addAndUpdatePage($array_post_parameter)
+    /**
+     * Save or Add page payment
+     * @param $array_page
+     * @return bool
+     * @author  Bobs
+     */
+    private function savePage($array_page)
     {
         $array_link = Array();
         $i = 0;
-        foreach ($array_post_parameter['percent'] as $key => $percent) {
-            $ar_links = $this->getLink($array_post_parameter, $percent);
-
-            foreach ($ar_links as $name => $link) {
-
-                $array_link['links'][$i] ['link'] = $link;
-                $array_link['links'][$i]['percent'] = $percent;
-                $array_link['links'][$i]['type'] = $name;
-                $array_link['links'][$i]['default'] = (
-                $array_post_parameter['option_client_percent_default'] == $percent ?
-                    1 : 0);
-                $i++;
+        if(!empty($array_page['several_percent_array']))
+        {
+            foreach ($array_page['several_percent_array'] as $key => $percent) {
+                $ar_links = $this->getLink($array_page, $percent);
+                foreach ($ar_links as $name => $link) {
+                    $array_link['links'][$i]['link'] = $link;
+                    $array_link['links'][$i]['percent'] = $percent;
+                    $array_link['links'][$i]['type'] = $name;
+                    $array_link['links'][$i]['default'] = ($array_page['several_percent_default'] == $percent ? 1 : 0);
+                    $i++;
+                }
             }
-
+            $array_page = array_merge($array_link, $array_page);
         }
 
-        $array_post_parameter = array_merge($array_link, $array_post_parameter);
-        if (isset($this->request->get['page_id'])) {
-            if ($this->model_sale_page_order_bobs->updatePage($array_post_parameter, $this->request->get['page_id'])) {
-                $this->session->data['success'] = $this->language->get('success_page_update');
-                return true;
-            } else {
-                $this->data['errors_warning'][] = 'error BD save page';
-                return false;
-            }
+        if ($this->model_sale_page_order_bobs->savePage($array_page)) {
+            $this->session->data['success'] = $this->language->get('success_page_save');
+            $this->data['errors_warning'][] = 'error BD save page';
+            return false;
         } else {
-            if ($this->model_sale_page_order_bobs->addPage($array_post_parameter)) {
-                $this->session->data['success'] = $this->language->get('success_page_insert');
-                return true;
-            } else {
-                $this->data['errors_warning'][] = 'error BD save page';
-                return false;
-            }
+            return true;
         }
-
     }
 
+    /**
+     *  Validate parameters termenal (page form)
+     *  $id_terminal :
+     *  0 - save page,
+     *  1 - to make the data from the number order,
+     *  2 - create link,
+     *  3 - to make the data from the number order (form link)
+     * @return bool
+     * @author  Bobs
+     */
     private function validateForm()
     {
-        //Errors
-        if ($this->request->post['terminal_id'] == 1 || $this->request->post['terminal_id'] == 3) { //( terminal_id ) 0 - save page, 1 - to make the data from the number order, 2 - create link, 3 - to make the data from the number order (form link)
-            $get_order_id = $this->request->post['get_order_id'];
-            if ($get_order_id == '') {
-                $this->data['errors_warning'][] = $this->language->get('null_number_order');
-                return false;
-            }
-            if (!$this->model_sale_order->getOrder($get_order_id)) {
-                $this->data['errors_warning'][] = $this->language->get('no_number_order');
-            }
-
-
-        } elseif ($this->request->post['terminal_id'] == 0) {
-
-            $order_id = $this->request->post['order_id']; // number of order
-            if (preg_match('/[^0-9]/', $order_id) || $order_id == '') {
-                $this->data['errors_warning'][] = $this->language->get('error_number_order');
-            }
-
-            $name_page = $this->request->post['name_page'];
-            if (preg_match('/[^A-Za-zА-Яа-я0-9_\-]/', $name_page) || $name_page == '') {
-                $this->data['errors_warning'][] = $this->language->get('error_name_page');
-            }
-            if (isset($this->request->get['page_id'])) { //Есть ли имя такое же, если есть, и она ссылается не на нашу страницу, запрещяем
-                if ($this->model_sale_page_order_bobs->findUrlAliasName($this->request->post['name_page'])) {
-                    if (!$this->model_sale_page_order_bobs->suitableUrlAliasNameAndId($this->request->post['name_page'],
-                        $this->request->get['page_id'])
-                    ) {
-
-                        $this->data['errors_warning'][] = 'error_name_page 3';
-                        return false;
-                    }
-                }
-            } else { //Есть ли имя страницы такое же есть, то запрещяем создание нового
-                if ($this->model_sale_page_order_bobs->findUrlAliasName($this->request->post['name_page'])) {
-
-                    $this->data['errors_warning'][] = $this->language->get('error_duplicate_page');
+        //ERRORS
+        switch ($this->request->post['terminal_id']) {
+            case 1:
+            case 3:
+                $get_order_id = $this->request->post['get_order_id'];
+                if ($get_order_id == '') {
+                    $this->data['errors_warning'][] = $this->language->get('null_number_order');
                     return false;
                 }
-            }
-            $order_alter_id = $this->request->post['order_alter_id'];
-            if (preg_match('/[^0-9]/', $order_alter_id) || $order_alter_id == '' || !is_numeric($order_alter_id)) {
-                $this->data['errors_warning'][] = $this->language->get('error_order_alter');
-            }
-
-            $currency_code = $this->request->post['currency_code'];
-            if (preg_match('/[^A-Za-z]/', $currency_code) || $currency_code == '') {
-                $this->data['errors_warning'][] = $this->language->get('error_currency_code');
-            }
-
-            $price = $this->request->post['price'];
-            if (preg_match('/[^0-9.]/', $price) || $price == '' || !is_numeric($price)) {
-                $this->data['errors_warning'][] = $this->language->get('error_prince_order');
-            }
-
-            $receiver_of_product = $this->request->post['receiver_of_product'];
-            if ($receiver_of_product == '') {
-                $this->data['errors_warning'][] = $this->language->get('error_receiver_of_product');
-            }
-
-            //Percent and default compliance
-            if (isset($this->request->post['option_client_percent']) &&
-                !in_array($this->request->post['option_client_percent_default'],
-                    $this->request->post['option_client_percent'])
-            ) {
-                $this->data['errors_warning'][] = $this->language->get('error_percent_and_default_compliance');
-            }
-
-
-            if (isset($this->request->post['pay2pay_check'])) {
-                $identifier_order = $this->request->post['pay2pay_identifier_shop'];
-                $key_secret = $this->request->post['pay2pay_key_secret'];
-                $test_mode = $this->request->post['pay2pay_test_mode'];
-                if (empty($identifier_order) || ($test_mode != 0 && $test_mode != 1) || empty($key_secret)) {
-                    $this->data['errors_warning'][] = 'incorrect data pay2pay';
+                if (!$this->model_sale_order->getOrder($get_order_id)) {
+                    $this->data['errors_warning'][] = $this->language->get('no_number_order');
                 }
-            }
-            if (isset($this->request->post['robokassa_check'])) {
-                $robokassa_identifier_shop = $this->request->post['robokassa_identifier_shop'];
-                $robokassa_key_secret = $this->request->post['robokassa_key_secret'];
-                if (empty($robokassa_identifier_shop) || empty($robokassa_key_secret)) {
-                    $this->data['errors_warning'][] = 'incorrect data robocassa';
+                break;
+            case 0:
+                $order_id = $this->request->post['order_id'];
+                if (preg_match('/[^0-9]/', $order_id) || $order_id == '') {
+                    $this->data['errors_warning'][] = $this->language->get('error_number_order');
                 }
-            }
-            if (isset($this->request->post['interkassa_check'])) //interkassa
-            {
-                $identifier_order = $this->request->post['interkassa_identifier_shop'];
-                if ($identifier_order == '') {
-                    $this->data['errors_warning'][] = 'incorrect data intercassa';
+
+                $name_page = $this->request->post['name_page'];
+                if (preg_match('/[^A-Za-zА-Яа-я0-9_\-]/', $name_page) || $name_page == '') {
+                    $this->data['errors_warning'][] = $this->language->get('error_name_page');
                 }
-            }
-
-        } elseif ($this->request->post['terminal_id'] == 2) {
-            $order_id = $this->request->post['order_id']; // number of order
-            if (preg_match('/[^0-9]/', $order_id) || $order_id == '') {
-                $this->data['errors_warning'][] = $this->language->get('error_number_order');
-            }
-
-            $currency_code = $this->request->post['currency_code'];
-            if (preg_match('/[^A-Za-z]/', $currency_code) || $currency_code == '') {
-                $this->data['errors_warning'][] = $this->language->get('error_currency_code');
-            }
-
-            $price = $this->request->post['price'];
-            if (preg_match('/[^0-9.]/', $price) || $price == '' || !is_numeric($price)) {
-                $this->data['errors_warning'][] = $this->language->get('error_prince_order');
-            }
-
-            $receiver_of_product = $this->request->post['receiver_of_product'];
-            if ($receiver_of_product == '') {
-                $this->data['errors_warning'][] = $this->language->get('error_receiver_of_product');
-            }
-
-
-            if (isset($this->request->post['pay2pay_check'])) {
-                $identifier_order = $this->request->post['pay2pay_identifier_shop'];
-                $key_secret = $this->request->post['pay2pay_key_secret'];
-                $test_mode = $this->request->post['pay2pay_test_mode'];
-                if (empty($identifier_order) || ($test_mode != 0 && $test_mode != 1) || empty($key_secret)) {
-                    $this->data['errors_warning'][] = 'incorrect data pay2pay';
+                //Есть ли имя такое же, если есть, и она ссылается не на нашу страницу, запрещяем TODO
+                if (isset($this->request->get['page_id'])) {
+                    if ($this->model_sale_page_order_bobs->findUrlAliasName($this->request->post['name_page'])) {
+                        if (!$this->model_sale_page_order_bobs->
+                        suitableUrlAliasNameAndId($this->request->post['name_page'], $this->request->get['page_id'])
+                        ) {
+                            $this->data['errors_warning'][] = 'error_name_page 3';
+                        }
+                    }
+                } else { //Есть ли имя страницы такое же есть, то запрещяем создание нового
+                    if ($this->model_sale_page_order_bobs->findUrlAliasName($this->request->post['name_page'])) {
+                        $this->data['errors_warning'][] = $this->language->get('error_duplicate_page');
+                    }
                 }
-            }
-            if (isset($this->request->post['robokassa_check'])) {
-                $robokassa_identifier_shop = $this->request->post['robokassa_identifier_shop'];
-                $robokassa_key_secret = $this->request->post['robokassa_key_secret'];
-                if (empty($robokassa_identifier_shop) || empty($robokassa_key_secret)) {
-                    $this->data['errors_warning'][] = 'incorrect data robocassa';
+                $order_site_id = $this->request->post['order_site_id'];
+                if (preg_match('/[^0-9]/', $order_site_id)) {
+                    $this->data['errors_warning'][] = $this->language->get('error_order_alter');
                 }
-            }
-            if (isset($this->request->post['interkassa_check'])) //interkassa
-            {
-                $identifier_order = $this->request->post['interkassa_identifier_shop'];
-                if ($identifier_order == '') {
-                    $this->data['errors_warning'][] = 'incorrect data intercassa';
+
+                $currency_code = $this->request->post['currency_code'];
+                if (preg_match('/[^A-Za-z]/', $currency_code) || $currency_code == '') {
+                    $this->data['errors_warning'][] = $this->language->get('error_currency_code');
                 }
-            }
+
+                $price = $this->request->post['price'];
+                if (preg_match('/[^0-9.]/', $price) || $price == '' || !is_numeric($price)) {
+                    $this->data['errors_warning'][] = $this->language->get('error_prince_order');
+                }
+
+                $receiver_of_product = $this->request->post['receiver_of_product'];
+                if ($receiver_of_product == '') {
+                    $this->data['errors_warning'][] = $this->language->get('error_receiver_of_product');
+                }
+
+                if (isset($this->request->post['several_percent']) &&
+                    !in_array($this->request->post['several_percent_default'], $this->request->post['several_percent'])
+                ) {
+                    $this->data['errors_warning'][] = $this->language->get('error_percent_and_default_compliance');
+                }
+
+
+                if (isset($this->request->post['pay2pay_check'])) {
+                    $identifier_order = $this->request->post['pay2pay_identifier_shop'];
+                    $key_secret = $this->request->post['pay2pay_key_secret'];
+                    $test_mode = $this->request->post['pay2pay_test_mode'];
+                    if (empty($identifier_order) || ($test_mode != 0 && $test_mode != 1) || empty($key_secret)) {
+                        $this->data['errors_warning'][] = 'incorrect data pay2pay';
+                    }
+                }
+                if (isset($this->request->post['robokassa_check'])) {
+                    $robokassa_identifier_shop = $this->request->post['robokassa_identifier_shop'];
+                    $robokassa_key_secret = $this->request->post['robokassa_key_secret'];
+                    if (empty($robokassa_identifier_shop) || empty($robokassa_key_secret)) {
+                        $this->data['errors_warning'][] = 'incorrect data robocassa';
+                    }
+                }
+                if (isset($this->request->post['interkassa_check'])) {
+                    $identifier_order = $this->request->post['interkassa_identifier_shop'];
+                    if ($identifier_order == '') {
+                        $this->data['errors_warning'][] = 'incorrect data intercassa';
+                    }
+                }
+                break;
+            case 2:
+                $order_id = $this->request->post['order_id'];
+                if (preg_match('/[^0-9]/', $order_id) || $order_id == '') {
+                    $this->data['errors_warning'][] = $this->language->get('error_number_order');
+                }
+
+                $currency_code = $this->request->post['currency_code'];
+                if (preg_match('/[^A-Za-z]/', $currency_code) || $currency_code == '') {
+                    $this->data['errors_warning'][] = $this->language->get('error_currency_code');
+                }
+
+                $price = $this->request->post['price'];
+                if (preg_match('/[^0-9.]/', $price) || $price == '' || !is_numeric($price)) {
+                    $this->data['errors_warning'][] = $this->language->get('error_prince_order');
+                }
+
+                $receiver_of_product = $this->request->post['receiver_of_product'];
+                if ($receiver_of_product == '') {
+                    $this->data['errors_warning'][] = $this->language->get('error_receiver_of_product');
+                }
+
+
+                if (isset($this->request->post['pay2pay_check'])) {
+                    $identifier_order = $this->request->post['pay2pay_identifier_shop'];
+                    $key_secret = $this->request->post['pay2pay_key_secret'];
+                    $test_mode = $this->request->post['pay2pay_test_mode'];
+                    if (empty($identifier_order) || ($test_mode != 0 && $test_mode != 1) || empty($key_secret)) {
+                        $this->data['errors_warning'][] = 'incorrect data pay2pay';
+                    }
+                }
+                if (isset($this->request->post['robokassa_check'])) {
+                    $robokassa_identifier_shop = $this->request->post['robokassa_identifier_shop'];
+                    $robokassa_key_secret = $this->request->post['robokassa_key_secret'];
+                    if (empty($robokassa_identifier_shop) || empty($robokassa_key_secret)) {
+                        $this->data['errors_warning'][] = 'incorrect data robocassa';
+                    }
+                }
+                if (isset($this->request->post['interkassa_check'])) {
+                    $identifier_order = $this->request->post['interkassa_identifier_shop'];
+                    if ($identifier_order == '') {
+                        $this->data['errors_warning'][] = 'incorrect data intercassa';
+                    }
+                }
+                break;
         }
-
         if (isset($this->data['errors_warning'])) {
             return false;
         }
 
-        //Attention
-        if ($this->request->post['terminal_id'] == 1) { //( terminal_id ) 0 - save page, 1 - to make the data from the number order, 2 - create link, 3 - to make the data from the number order (form link)
+        //ATTENTION
+        if ($this->request->post['terminal_id'] == 1) {
             $get_order_id = $this->request->post['get_order_id'];
             $page_find = $this->model_sale_page_order_bobs->getPageByOrder($get_order_id);
             if (!$page_find === false) {
@@ -1012,28 +955,54 @@ class ControllerSalePageOrderBobs extends Controller
             }
         }
         return true;
-
     }
 
-    private function modifierPostToArray($post)
+    /**
+     * @param array $post
+     * @return array
+     * @author  Bobs
+     */
+    private function modifierAndAddInForm($post)
     {
-
 
         $array_post_parameter = array();
         foreach ($post as $key => $post_parameter) {
             $array_post_parameter[$key] = $post_parameter;
         }
 
-        if (isset($array_post_parameter['order_alter_check'])) {
-            $array_post_parameter['order_alter_check'] = 1;
+        if (isset($array_post_parameter['order_site_check'])) {
+            $array_post_parameter['order_site_check'] = 1;
         } else {
-            $array_post_parameter['order_alter_check'] = 0;
+            $array_post_parameter['order_site_check'] = 0;
         }
 
         if (isset($array_post_parameter['currency_code_check'])) {
             $array_post_parameter['currency_code_check'] = 1;
         } else {
             $array_post_parameter['currency_code_check'] = 0;
+        }
+
+        if (isset($array_post_parameter['one_percent'])) {
+            $array_post_parameter['currency_code_check'] = 1;
+        } else {
+            $array_post_parameter['currency_code_check'] = 0;
+        }
+
+        $root_default_page = $this->model_sale_page_order_bobs->getRootDefaultPage();
+        if (!isset($array_post_parameter['one_percent'])) {
+            $array_post_parameter['one_percent'] = $root_default_page['one_percent'];
+        }
+        $array_post_parameter['several_percent'] = null;
+        if (isset($post['several_percent'])) {
+            $array_post_parameter['several_percent'] = serialize($post['several_percent']);
+            $array_post_parameter['several_percent_array'] = $post['several_percent']; //Array in array
+        } else {
+            $array_post_parameter['several_percent'] = serialize($root_default_page['several_percent']);
+            $array_post_parameter['several_percent_array'] = $root_default_page['several_percent'];
+        }
+
+        if (!isset($post['several_percent_default'])) {
+            $array_post_parameter['several_percent_default'] = $root_default_page['several_percent_default'];
         }
 
         if (isset($array_post_parameter['pay2pay_check'])) {
@@ -1059,54 +1028,6 @@ class ControllerSalePageOrderBobs extends Controller
         } else {
             $array_post_parameter['alter_payment_check'] = 0;
         }
-
-        //Percent
-        switch ($array_post_parameter['one_percent']) {
-            case 1:
-                $array_post_parameter['one_percent'] = 10;
-                break;
-            case 2:
-                $array_post_parameter['one_percent'] = 20;
-                break;
-            case 3:
-                $array_post_parameter['one_percent'] = 30;
-                break;
-            case 4:
-                $array_post_parameter['one_percent'] = 40;
-                break;
-            case 5:
-                $array_post_parameter['one_percent'] = 50;
-                break;
-            case 6:
-                $array_post_parameter['one_percent'] = 60;
-                break;
-            case 7:
-                $array_post_parameter['one_percent'] = 70;
-                break;
-            case 8:
-                $array_post_parameter['one_percent'] = 80;
-                break;
-            case 9:
-                $array_post_parameter['one_percent'] = 90;
-                break;
-            case 10:
-                $array_post_parameter['one_percent'] = 100;
-                break;
-        }
-        $array_post_parameter['option_client_percent'] = null;
-        if (isset($post['option_client_percent'])) {
-            $array_post_parameter['option_client_percent'] = serialize($post['option_client_percent']);
-            $array_post_parameter['percent'] = $post['option_client_percent']; //Array in array
-        } else {
-            $array_post_parameter['option_client_percent'] = '';
-            $array_post_parameter['percent'][0] = 100;
-        }
-
-        if (!isset($post['option_client_percent_default'])) {
-            $array_post_parameter['option_client_percent_default'] = 100;
-        }
-
-
         return $array_post_parameter;
     }
 
@@ -1280,6 +1201,13 @@ class ControllerSalePageOrderBobs extends Controller
         return $array_post_parameter;
     }
 
+
+    /**
+     * Counts a length of the line is space
+     * @param string $str_desc
+     * @return int
+     * @author  Bobs
+     */
     private function getLengthStringUrl($str_desc)
     {
         $i = mb_substr_count($str_desc, ' ');
@@ -1296,13 +1224,32 @@ class ControllerSalePageOrderBobs extends Controller
      */
     private function setUpdateForm($page_form = null)
     {
-        $array_post_parameter = $this->modifierPostToArray($this->request->post); //Создаем массив
-        $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters
+        $array_page = $this->modifierAndAddInForm($this->request->post);
+        $this->model_sale_page_order_bobs->setParameters($array_page);
         if (isset($page_form)) {
-            $this->getForm($array_post_parameter, $page_form);
+            $this->getForm($array_page, $page_form);
         } else {
-            $this->getForm($array_post_parameter);
+            $this->getForm($array_page);
         }
+    }
+
+    /**
+     * Gag is getForm
+     *
+     * @param int $page_form The visible page form or links form
+     *
+     * @author  Bobs
+     */
+    private function gagForm(array &$data)
+    {
+        $root_default_page = $this->model_sale_page_order_bobs->getRootDefaultPage();
+        if (!isset($data['one_percent'])) {
+            $data['one_percent'] = $root_default_page['one_percent'];
+        }
+        if (!isset($data['one_price_total'])) {
+            $data['one_percent'] = $root_default_page['one_percent'];
+        }
+
 
     }
 
