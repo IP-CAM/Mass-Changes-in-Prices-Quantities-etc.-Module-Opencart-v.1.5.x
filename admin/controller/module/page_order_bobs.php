@@ -112,10 +112,10 @@ class ControllerModulePageOrderBobs extends Controller
 
         $sql = "CREATE TABLE IF NOT EXISTS  `" . DB_PREFIX . "page_order_bobs_parameters`
         ( `parameters_id` INT(11) NOT NULL ,
-        `get_order_id` INT(11) NULL ,
+        `get_order_id` INT(11) NOT NULL ,
         `order_id` INT(11) NOT NULL ,
         `order_site_check` TINYINT(1) NOT NULL ,
-        `order_site_id` INT(11) NULL ,
+        `order_site_id` INT(11) NOT NULL ,
         `currency_code` VARCHAR(3) NOT NULL ,
         `currency_code_check` TINYINT(1) NOT NULL ,
         `type_of_presentation` INT(2) NOT NULL ,
@@ -141,7 +141,8 @@ class ControllerModulePageOrderBobs extends Controller
         `one_price_total` DECIMAL(15,4) NOT NULL ,
         `one_percent` INT(11) NOT NULL ,
         `several_percent_default` INT(11) NOT NULL ,
-        `several_percent` TEXT NOT NULL
+        `several_percent` TEXT NOT NULL ,
+        PRIMARY KEY(`parameters_id`)
         )
          ENGINE  =  MyISAM  DEFAULT CHARSET  = utf8";
         $this->db->query($sql);
@@ -149,10 +150,10 @@ class ControllerModulePageOrderBobs extends Controller
 
         $sql = "REPLACE INTO  `" . DB_PREFIX . "page_order_bobs_parameters` SET
         `parameters_id` = 0 ,
-        `get_order_id` ='' ,
+        `get_order_id` = 0 ,
         `order_id` = 99 ,
         `order_site_check` =0 ,
-        `order_site_id` = NULL ,
+        `order_site_id` = 0 ,
         `currency_code` ='RUB' ,
         `currency_code_check` =0,
         `type_of_presentation` =0 ,

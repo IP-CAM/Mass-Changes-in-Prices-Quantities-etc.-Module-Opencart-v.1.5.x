@@ -5,19 +5,19 @@ class ModelSalePageOrderBobs extends Model
 
     /**
      * Save parameters page
+     *
      * @param array $array_page
      * @author  Bobs
      */
-    public function setParameters($array_page)
+    public function setParameters($array_page, $save_page = false)
     {
-
-        $get_order_id = null;
-        if ($array_page['get_order_id'] != '') {
-            $get_order_id = $array_page['get_order_id'];
+        if ($save_page) {
+            $array_page['get_order_id'] = "";
         }
         $sql = "REPLACE INTO `" . DB_PREFIX . "page_order_bobs_parameters` SET " .
             "`parameters_id` = 1, " .
-            "`get_order_id` = " . (int)$get_order_id . ", " .
+            "`get_order_id` = " . (int)$array_page['get_order_id'] . ", " .
+            "`order_id` = " . (int)$array_page['order_id'] . ", " .
             "`order_site_check` = " . (int)$array_page['order_site_check'] . ", " .
             "`order_site_id` = " . (int)$array_page['order_site_id'] . ", " .
             "`currency_code` = '" . $this->db->escape($array_page['currency_code']) . "', " .
@@ -49,112 +49,178 @@ class ModelSalePageOrderBobs extends Model
         $this->db->query($sql);
     }
 
+
+    /**
+     * Return parameters erge defalt and new
+     *
+     * @return array
+     * @author  Bobs
+     */
     public function getParameters()
     {
-        $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "page_order_bobs_parameters`  ORDER BY  parameters_id DESC LIMIT 1");
+        $parameters = array_merge($this->getParametersNewValidate(), $this->getParametersDefaultValidate());
+        return $parameters;
+    }
+
+
+    /**
+     * Return new parameters, old - if now empty
+     *
+     * @return mixed
+     * @author  Bobs
+     */
+    private function getParametersNewValidate()
+    {
+        $sql = "SELECT
+            `pay2pay_check`,
+            `pay2pay_identifier_shop`,
+            `pay2pay_key_secret`,
+            `pay2pay_test_mode`,
+            `robokassa_check`,
+            `robokassa_identifier_shop`,
+            `robokassa_key_secret`,
+            `robokassa_test_mode`,
+            `interkassa_check`,
+            `interkassa_identifier_shop`,
+            `interkassa_test_mode`,
+            `alter_payment_check`,
+            `alter_payment_text` FROM
+            `" . DB_PREFIX . "page_order_bobs_parameters`
+            WHERE
+            `parameters_id`=IF(`parameters_id`=1,1,0)";
+
+        $query = $this->db->query($sql);
         return $query->row;
     }
 
 
     /**
-     * Return default parameters
+     * Return old (default) parameters
+     *
      * @return mixed
      * @author  Bobs
      */
-    public function getDefaultParameters()
+    private function getParametersDefaultValidate()
     {
-        $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "page_order_bobs_parameters`  WHERE parameters_id = 0");
+        $sql = "SELECT
+            `get_order_id`,
+            `order_id`,
+            `order_site_check`,
+            `order_site_id`,
+            `currency_code`,
+            `currency_code_check`,
+            `type_of_presentation` ,
+            `price` ,
+            `receiver_of_product`,
+            `description_order`,
+            `delivery_address`,
+            `delivery_method`,
+            `notes`,
+            `one_price_total`,
+            `one_percent`,
+            `several_percent_default`,
+            `several_percent` FROM
+            `" . DB_PREFIX . "page_order_bobs_parameters`
+            WHERE
+            `parameters_id`=0";
+
+        $query = $this->db->query($sql);
         return $query->row;
     }
+
 
     /**
-     * Return Root default page
-     * @return mixed
+     * Return is there string UrlAlias with Name and Page
+     *
+     * @param string $name_page
+     * @param int    $page_id
+     * @return bool
      * @author  Bobs
      */
-    public function getRootDefaultPage()
+    public function emptyUrlAliasNameAndId($name_page, $page_id)
     {
-        $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "page_order_bobs_parameters`  WHERE `parameters_id`=0");
-        return $query->row;
-    }
-
-    public function suitableUrlAliasNameAndId($name_page, $page_id)
-    {
-        $sql = "
-        SELECT * FROM `" . DB_PREFIX . "url_alias`
+        $sql = "SELECT * FROM `" . DB_PREFIX . "url_alias`
         WHERE `keyword`= '" . $this->db->escape($name_page) . "'
         AND `query`='page_order_bobs_id=" . (int)$page_id . "'";
         $obj_sql = $this->db->query($sql);
         if ($obj_sql->num_rows == 0) {
-            return false;
-        } else {
             return true;
+        } else {
+            return false;
 
         }
     }
 
-    public function findUrlAliasName($name_page)
+
+    /**
+     * Return is there string UrlAlias with Name
+     *
+     * @param string $name_page
+     * @return bool
+     * @author  Bobs
+     */
+    public function emptyUrlAliasName($name_page)
     {
         $sql = "SELECT * FROM `" . DB_PREFIX . "url_alias` WHERE `keyword` LIKE '" . $this->db->escape($name_page) . "'";
         $obj_sql = $this->db->query($sql);
         if ($obj_sql->num_rows == 0) {
-            return false;
-        } else {
             return true;
+        } else {
+            return false;
 
         }
     }
 
-    //return page description
-    public function getPageByOrder($order_id)
+
+    /**
+     * Return Name Page page by order
+     *
+     * @param int $order_id
+     * @return mixed
+     * @author  Bobs
+     */
+    public function getNamePageByOrder($order_id)
     {
         $sql = "SELECT * FROM `" . DB_PREFIX . "page_order_bobs_description` WHERE `order_id` LIKE " . (int)$order_id;
         $obj_sql_page = $this->db->query($sql);
         if ($obj_sql_page->num_rows == 0) {
             return false;
         } else {
-            $sql = "SELECT * FROM `" . DB_PREFIX . "url_alias` WHERE `query` LIKE 'page_order_bobs_id=" . (int)$obj_sql_page->row['page_id'] . "'";
+            $sql = "SELECT * FROM `" . DB_PREFIX . "url_alias` WHERE
+                    `query` LIKE 'page_order_bobs_id=" . (int)$obj_sql_page->row['page_id'] . "'";
             $obj_sql = $this->db->query($sql);
-            $obj_sql_page->row['name_page'] = $obj_sql->row['keyword'];
-            return $obj_sql_page->row;
-
+            return $obj_sql->row['keyword'];
         }
     }
 
-    //return page description
-    public function getPageByPage($page_id)
-    {
-        $sql = "SELECT * FROM `" . DB_PREFIX . "page_order_bobs_description` WHERE `page_id` LIKE " . (int)$page_id;
-        $obj_sql_page = $this->db->query($sql);
-        if ($obj_sql_page->num_rows == 0) {
-            return false;
-        } else {
-            $sql = "SELECT * FROM `" . DB_PREFIX . "url_alias` WHERE `query` LIKE 'page_order_bobs_id=" . (int)$page_id . "'";
-            $obj_sql = $this->db->query($sql);
-            $obj_sql_page->row['name_page'] = $obj_sql->row['keyword'];
-            return $obj_sql_page->row;
-
-        }
-    }
 
     /**
-     * Return name seo_page (page list)
-     * @param $page_id
+     * Return Page page by page
+     *
+     * @param int $page_id
      * @return mixed
      * @author  Bobs
      */
-    private function getNamePageByPageId($page_id)
+    public function getPageByPage($page_id)
     {
+        $sql = "SELECT * FROM
+                `" . DB_PREFIX . "page_order_bobs` pob LEFT JOIN `" . DB_PREFIX . "page_order_bobs_description` pobd
+                ON pob.page_id=pobd.page_id WHERE pob.page_id = " . (int)$page_id;
+        $obj_sql_page = $this->db->query($sql);
+        if ($obj_sql_page->num_rows == 0) {
+            return false;
+        }
         $sql = "SELECT * FROM `" . DB_PREFIX . "url_alias` WHERE `query` LIKE 'page_order_bobs_id=" . (int)$page_id . "'";
         $obj_sql = $this->db->query($sql);
-        return $obj_sql->row['keyword'];
+        $obj_sql_page->row['name_page'] = $obj_sql->row['keyword'];
+        return $obj_sql_page->row;
     }
 
 
     /**
      * Return count line table
      *
-     * @return mixed count line table
+     * @return int count line table
      * @author  Bobs
      */
     public function getOrderPageCount()
@@ -162,6 +228,7 @@ class ModelSalePageOrderBobs extends Model
         $query = $this->db->query("SELECT COUNT(*) FROM `" . DB_PREFIX . "page_order_bobs`");
         return $query->row['COUNT(*)'];
     }
+
 
     /**
      * Return Page payment sort and limit (page list)
@@ -171,8 +238,9 @@ class ModelSalePageOrderBobs extends Model
      *  'start' => 0,
      *  'limit' => 20 //$this->config->get('config_admin_limit')
      *  );
+     *
      * @param array $data
-     * @return mixed
+     * @return array
      * @author  Bobs
      */
     public function getPagesOrder($data = array())
@@ -223,8 +291,24 @@ class ModelSalePageOrderBobs extends Model
 
 
     /**
+     * Return name seo_page (page list)
+     *
+     * @param int $page_id
+     * @return string
+     * @author  Bobs
+     */
+    private function getNamePageByPageId($page_id)
+    {
+        $sql = "SELECT * FROM `" . DB_PREFIX . "url_alias` WHERE `query` LIKE 'page_order_bobs_id=" . (int)$page_id . "'";
+        $obj_sql = $this->db->query($sql);
+        return $obj_sql->row['keyword'];
+    }
+
+
+    /**
      * Delete page payment (page list)
-     * @param $page_id
+     *
+     * @param int $page_id
      * @author  Bobs
      */
     public function deletePage($page_id)
@@ -238,34 +322,70 @@ class ModelSalePageOrderBobs extends Model
     }
 
 
+    /**
+     * Save Page
+     *
+     * @param array $array_page
+     * @return bool
+     * @author  Bobs
+     */
     public function savePage($array_page)
     {
 
-        if (!$this->setPage($array_page)) {
+        $page_id = $this->getPageId($array_page);
+
+        if (!$this->setPage($array_page, $page_id)) {
             return false;
         }
 
-        if (!$this->setPageDescription($array_page)) {
+        if (!$this->setPageDescription($array_page, $page_id)) {
             return false;
         }
 
-        if (!$this->setPageLink($array_page)) {
+        if (!$this->setPageLink($array_page, $page_id)) {
             return false;
         }
 
-        if (!$this->setUrlAlias($array_page)) {
+        if (!$this->setPageUrlAlias($array_page, $page_id)) {
             return false;
         }
         return true;
     }
 
-    private function setPage($array_page)
+
+    /**
+     * Return page_id (for function savePage)
+     *
+     * @param array $array_page
+     * @return int
+     * @author  Bobs
+     */
+    private function getPageId($array_page)
     {
         if (isset($array_page['page_id'])) {
             $page_id = $array_page['page_id'];
         } else {
-            $page_id = 'null';
+            $max_id = $this->db->query("SELECT MAX(`page_id`) FROM `" . DB_PREFIX . "page_order_bobs`");
+            $max_id = $max_id->row['MAX(`page_id`)'];
+            if ($max_id == null) {
+                $max_id = 0;
+            }
+            $page_id = (int)$max_id + 1; //following line
         }
+        return $page_id;
+    }
+
+
+    /**
+     * Set table page_order_bobs (for function savePage)
+     *
+     * @param array $array_page
+     * @param int $page_id
+     * @return bool
+     * @author  Bobs
+     */
+    private function setPage($array_page, $page_id)
+    {
         $sql = "REPLACE INTO `" . DB_PREFIX . "page_order_bobs` SET " .
             "`page_id` = " . $page_id . ", " .
             "`bottom` = " . (int)0 . ", " .
@@ -284,14 +404,17 @@ class ModelSalePageOrderBobs extends Model
         return true;
     }
 
-    private function setPageDescription($array_page)
-    {
 
-        if (isset($array_page['page_id'])) {
-            $page_id = $array_page['page_id'];
-        } else {
-            $page_id = 'null';
-        }
+    /**
+     * Set table page_order_bobs_description (for function savePage)
+     *
+     * @param array $array_page
+     * @param int $page_id
+     * @return bool
+     * @author  Bobs
+     */
+    private function setPageDescription($array_page, $page_id)
+    {
         $sql = "REPLACE INTO `" . DB_PREFIX . "page_order_bobs_description` SET " .
             "`page_id` = " . $page_id . ", " .
             "`order_id` = " . (int)$array_page['order_id'] . ", " .
@@ -321,22 +444,23 @@ class ModelSalePageOrderBobs extends Model
             "`alter_payment_text` = '" . $this->db->escape($array_page['alter_payment_text']) . "'";
         try {
             $this->db->query($sql);
-
         } catch (Exception $e) {
             return false;
         }
-
         return true;
     }
 
 
-    private function setPageLink($array_page)
+    /**
+     * Set table page_order_bobs_links (for function savePage)
+     *
+     * @param array $array_page
+     * @param int $page_id
+     * @return bool
+     * @author  Bobs
+     */
+    private function setPageLink($array_page, $page_id)
     {
-        if (isset($array_page['page_id'])) {
-            $page_id = $array_page['page_id'];
-        } else {
-            $page_id = 'null';
-        }
         $this->db->query("DELETE FROM `" . DB_PREFIX . "page_order_bobs_links` WHERE page_id = '" . (int)$page_id . "'");
         if (!empty($array_page['links'])) {
             foreach ($array_page['links'] as $key => $links) {
@@ -359,32 +483,39 @@ class ModelSalePageOrderBobs extends Model
     }
 
 
-    private function setUrlAlias($array_page)
+    /**
+     * Set table url_alias (for function savePage)
+     *
+     * @param array $array_page
+     * @param int $page_id
+     * @return bool
+     * @author  Bobs
+     */
+    private function setPageUrlAlias($array_page, $page_id)
     {
-
-        if (isset($array_page['page_id'])) {
-            $sql = "UPDATE `" . DB_PREFIX . "url_alias`
-                SET `keyword` = '" . $this->db->escape($array_page['name_page']) . "'
-                WHERE `query` = 'page_order_bobs_id=" . (int)$array_page['page_id'] . "'";
+        $sql = "SELECT `url_alias_id` FROM `" . DB_PREFIX . "url_alias`
+                WHERE
+                `query` = 'page_order_bobs_id=" . (int)$page_id . "'";
+        $url_alias_id = $this->db->query($sql);
+        if ($url_alias_id->num_rows != 0) {
+            $url_alias_id = $url_alias_id->row['url_alias_id']; //following line
         } else {
-            $max_id = $this->db->query("SELECT MAX(`page_id`) FROM `" . DB_PREFIX . "page_order_bobs`");
-            $max_id = $max_id->row['MAX(`page_id`)'];
-            if ($max_id == null) {
-                $max_id = 0;
-            }
-            $page_id = (int)$max_id + 1; //following line
-            $sql = "INSERT INTO `" . DB_PREFIX . "url_alias` (`url_alias_id`, `query`, `keyword`) VALUES (
-            NULL, 'page_order_bobs_id=" . (int)$page_id . "', '" .
-                $this->db->escape($array_page['name_page']) . "'
-            )";
+            $max_url_alias_id = $this->db->query("SELECT MAX(`url_alias_id`) FROM `" . DB_PREFIX . "url_alias`");
+            $max_url_alias_id = $max_url_alias_id->row['MAX(`url_alias_id`)'];
+            $url_alias_id = (int)$max_url_alias_id + 1; //following line
         }
+
+        $sql = "REPLACE `" . DB_PREFIX . "url_alias`
+                SET
+                `url_alias_id` = " . (int)$url_alias_id . ",
+                `query` = 'page_order_bobs_id=" . (int)$page_id . "',
+                `keyword` = '" . $this->db->escape($array_page['name_page']) . "'";
         try {
             $this->db->query($sql);
         } catch (Exception $e) {
             return false;
         }
-
-
+        return true;
     }
 }
 

@@ -4,11 +4,8 @@ class ControllerInformationPageOrderBobs extends Controller
 {
     public function post()
     {
-
-          $json = array();
         $json=$this->getLink($this->request->post['order_id'],$this->request->post['percent']);
         $this->response->setOutput(json_encode($json));
-
     }
 
     private function getLink($order_id, $percent)
@@ -28,7 +25,7 @@ class ControllerInformationPageOrderBobs extends Controller
         $linkInterkassa = "";
 
         $currency_code = $page['currency_code'];
-        $price = $page['price_total']; //Summa
+        $price = $page['one_price_total']; //Summa
         $price = ((float)$price*(int)$percent)/100; //update
         $price = floor($price); //delete  TODO
 
@@ -38,7 +35,6 @@ class ControllerInformationPageOrderBobs extends Controller
             $identifier_order = $page['pay2pay_identifier_shop'];
             $test_mode = $page['pay2pay_test_mode'];
             $key_secret = $page['pay2pay_key_secret'];
-
 
             //Pay2pay
             $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
@@ -72,8 +68,6 @@ class ControllerInformationPageOrderBobs extends Controller
             $linkRobokassa = "https://merchant.roboxchange.com/Index.aspx?" .
                 "MerchantLogin=$robokassa_identifier_shop&IsTest=$robokassa_test_mode&OutSum=$price_format&InvId=$order_id" .
                 "&Desc=$description_order&SignatureValue=$crc";
-
-
         }
 
         if ($page['interkassa_check']) //interkassa
@@ -100,16 +94,14 @@ class ControllerInformationPageOrderBobs extends Controller
 
     public function index()
     {
-
-
         $this->language->load('information/page_order_bobs');
         $this->load->model('tool/image');
         $this->load->model('account/order');
         $this->load->model('catalog/product');
-
-
-        if (file_exists('catalog/view/theme/' . $this->config->get('config_template') . '/stylesheet/page_order_bobs.css')) {
-            $this->document->addStyle('catalog/view/theme/' . $this->config->get('config_template') . '/stylesheet/page_order_bobs.css');
+        if (file_exists('catalog/view/theme/' . $this->config->get('config_template') .
+            '/stylesheet/page_order_bobs.css')) {
+            $this->document->addStyle('catalog/view/theme/' . $this->config->get('config_template') .
+                '/stylesheet/page_order_bobs.css');
         } else {
             $this->document->addStyle('catalog/view/theme/default/stylesheet/page_order_bobs.css');
         }
@@ -160,24 +152,22 @@ class ControllerInformationPageOrderBobs extends Controller
             $this->data['currency_code_label'] = $this->language->get('currency_code_label');
             $this->data['price_label'] = $this->language->get('price_label');
 
-
             $this->data['receiver_of_product_label'] = $this->language->get('receiver_of_product');
 
             $this->data['delivery_address_label'] = $this->language->get('delivery_address');
             $this->data['delivery_method_label'] = $this->language->get('delivery_method');
             $this->data['notes_label'] = $this->language->get('notes');
-            $order = $this->model_account_order->getOrder($page['order_alter_id']);
-            if (!$page['order_alter_check']) {
-                $order = 0; //No tabl? if no tabl programm
+
+
+            $order = $this->model_account_order->getOrder($page['order_site_id']);
+            if (!$page['order_site_check']) {
+                $order = 0; //No tabl, if no tabl programm
             }
                 //if is store no empty order
             if ($order) {
+
                 $this->data['order'] = true;
-
-
                 $order_products = $this->model_account_order->getOrderProducts($order['order_id']);
-
-
                 $products = Array();
                 foreach ($order_products as $key => $order_product) {
                     $products[] = $order_product;
@@ -271,7 +261,7 @@ class ControllerInformationPageOrderBobs extends Controller
                 foreach($options_client_percent as $key=>$option_client_percent)
                 {
                     $options_client_percent_general[$key]['percent']=$option_client_percent;
-                    $options_client_percent_general[$key]['price']=$this->currency->format(floor(($page['price_total']*$option_client_percent)/100)); //delete  TODO
+                    $options_client_percent_general[$key]['price']=$this->currency->format(floor(($page['one_price_total']*$option_client_percent)/100)); //delete  TODO
                 }
                 $this->data['option_client_percent']=$options_client_percent_general;
             }else{
@@ -290,13 +280,13 @@ class ControllerInformationPageOrderBobs extends Controller
             $this->data['delivery_method'] = $page['delivery_method'];
             $this->data['notes'] = $page['notes'];
 
-            if($page['price']!=$page['price_total'])
+            if($page['price']!=$page['one_price_total'])
             {
                 $this->data['price_label'] = $this->language->get('price_before_present_label');
                 $this->data['price']  =
                     $this->currency->format($page['price']).
                     $this->language->get('price_after_present_label').
-                    $page['per_cent_of_all'].
+                    $page['one_percent'].
                     '%)';
             }
 
@@ -370,6 +360,90 @@ class ControllerInformationPageOrderBobs extends Controller
         $i = mb_substr_count($str_desc, ' ');
         $i *= 2; //space %20 - 3
         return utf8_strlen($str_desc) + $i;
+    }
+
+    private function createTableOrder(){
+
+        $this->data['column_image'] = $this->language->get('column_image');
+        $this->data['column_name'] = $this->language->get('column_name');
+        $this->data['column_model'] = $this->language->get('column_model');
+        $this->data['column_quantity'] = $this->language->get('column_quantity');
+        $this->data['column_price'] = $this->language->get('column_price');
+        $this->data['column_total'] = $this->language->get('column_total');
+
+        $this->data['order'] = true;
+        $order_products = $this->model_account_order->getOrderProducts($order['order_id']);
+        $products = Array();
+        foreach ($order_products as $key => $order_product) {
+            $products[] = $order_product;
+            $product = $this->model_catalog_product->getProduct($order_product['product_id']);
+            $products[$key]['image'] = $product['image'];
+            $products[$key]['tax_class_id'] = $product['tax_class_id'];
+            //$products[]=$order_product;
+            $products[$key]['option'] = $this->model_account_order->getOrderOptions($order_product['order_id'], $order_product['order_product_id']);
+        }
+
+        foreach ($products as $product) {
+            $option_data = array();
+            $points_total = 0;
+            foreach ($product['option'] as $option) {
+                if ($option['type'] != 'file') {
+                    $value = $option['value'];
+                } else {
+                    $encryption = new Encryption($this->config->get('config_encryption'));
+                    $option_value = $encryption->decrypt($option['value']);
+                    $filename = substr($option_value, 0, strrpos($option_value, '.'));
+                    $value = $filename;
+                }
+                $option_data[] = array(
+                    'name' => $option['name'],
+                    'value' => (utf8_strlen($value) > 200 ? utf8_substr($value, 0, 20) . '..' : $value)
+                );
+            }
+
+            if ($product['image']) {
+                $image_cart_width = $this->config->get('config_image_cart_width');
+                $image_cart_width = $image_cart_width ? $image_cart_width : 40;
+                $image_cart_height = $this->config->get('config_image_cart_height');
+                $image_cart_height = $image_cart_height ? $image_cart_height : 40;
+                $image = $this->model_tool_image->resize($product['image'], $image_cart_width, $image_cart_height);
+            } else {
+                $image = '';
+            }
+
+            if (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price')) {
+                $price = $this->currency->format($this->tax->calculate($product['price'], $product['tax_class_id'], $this->config->get('config_tax')));
+            } else {
+                $price = false;
+            }
+
+            if (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price')) {
+                $total = $this->currency->format($this->tax->calculate($product['price'], $product['tax_class_id'], $this->config->get('config_tax')) * $product['quantity']);
+            } else {
+                $total = false;
+            }
+
+            $this->data['products'][] = array(
+                'thumb' => $image,
+                'name' => $product['name'],
+                'model' => $product['model'],
+                'option' => $option_data,
+                'quantity' => $product['quantity'],
+                'price' => $price,
+                'total' => $total,
+                'href' => $this->url->link('product/product', 'product_id=' . $product['product_id'])
+            );
+
+        }
+
+        if (count($order_products) > 1) {
+            $this->data['total_all'] = $this->currency->format($order['total']);
+            $this->data['total_all_label'] = $this->language->get('total_all_label');
+
+        }
+
+
+
     }
 
 }

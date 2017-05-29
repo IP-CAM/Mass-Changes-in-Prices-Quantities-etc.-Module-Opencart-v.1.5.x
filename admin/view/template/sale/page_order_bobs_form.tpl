@@ -104,12 +104,12 @@
                     <td><p id="path_page_text_full"></p></td>
                 </tr>
                 <tr>
-                    <td><? echo $order_alter_id_label; ?></td>
+                    <td><? echo $order_site_id_label; ?></td>
                     <td>
                         <input type="text" id="order_site_id" name="order_site_id" value="<?php echo $order_site_id; ?>"/>
                         <input type="checkbox" name="order_site_check" id="order_site_check"
                                 <?php if($order_site_check) { ?> checked <?php }?>>
-                        <?php echo $order_alter_check_label; ?>
+                        <?php echo $order_site_check_label; ?>
                     </td>
                 </tr>
                 <?php } ?>
@@ -142,40 +142,41 @@
                     <td><span class="required">*</span><span id="price_label"><?php echo $price_label; ?></span></td>
                     <td>
                         <input type="text" name="price" value="<?php echo $price; ?>"/>
-                        <select name="one_percent" id="per_cent_of_all_select">
+                        <select name="one_percent" id="one_percent_select">
                             <?php for ($i = 10; $i <= 100; $i+=10) { ?>
-                                <option value="<?php echo $i ?>"
-                                <?php if($one_percent==$i) { ?> selected="selected" <?php } ?> ><?php echo $i ?>%
-                                </option>
+                            <option value="<?php echo $i ?>"
+                            <?php if($one_percent==$i) { ?>
+                            selected="selected" <?php } ?> ><?php echo $i ?>%</option>
                             <?php } ?>
                         </select>
-                        <span id="per_cent_of_all_text">
-                            <?php if(isset($price_total_text)) { echo $price_total_text; } ?>
+                        <span id="one_percent_text">
+                            <?php if(isset($one_price_total_text)) { echo $one_price_total_text; } ?>
                         </span>
                     </td>
                 </tr>
                 <?php if($page_form){ ?>
-                <tr>
-                    <td><span><?php echo $option_client_percent_label; ?></span></td>
-                    <td>
-                        <a  id="expand_down"></a>
-                        <div id="option_client_percent_block">
-                            <?php for ($i = 10; $i <= 100; $i+=10) { ?>
-                            <p>
-                                <span>
-                                    <?php echo $option_client_percent_default_label; ?>
-                                </span>
-                                <input type="radio" name="several_percent_default" value="<?php echo $i ?>"
-                                        <?php if($several_percent_default==$i){ ?> checked="checked" <?php } ?> />
-                                <input type="checkbox" name="several_percent[]" value="<?php echo $i ?>" <?php
-                                    if($several_percent!=null) {
-                                    if(array_search($i,$several_percent)!==false) { ?> checked="checked"<?php } } ?>>
-                                <?php echo $i ?>%
-                            </p>
-                            <?php } ?>
-                        </div>
-                    </td>
-                </tr>
+
+                    <tr id="several_percent">
+                        <td><span><?php echo $option_client_percent_label; ?></span></td>
+                        <td>
+                            <div id="option_client_percent_block">
+                                <?php for ($i = 10; $i <= 100; $i+=10) { ?>
+                                <p>
+                                    <span>
+                                        <?php echo $option_client_percent_default_label; ?>
+                                    </span>
+                                    <input type="radio" name="several_percent_default" value="<?php echo $i ?>"
+                                            <?php if($several_percent_default==$i){ ?> checked="checked" <?php } ?> />
+                                    <input type="checkbox" name="several_percent[]" value="<?php echo $i ?>" <?php
+                                        if($several_percent!=null) {
+                                        if(array_search($i,$several_percent)!==false) { ?> checked="checked"<?php } } ?>>
+                                    <?php echo $i ?>%
+                                </p>
+                                <?php } ?>
+                            </div>
+                        </td>
+                    </tr>
+
                 <?php } ?>
                 <tr>
                     <td><span class="required">*</span><?php echo $receiver_of_product_label; ?></td>
@@ -261,11 +262,13 @@
                     <td><?php echo $test_mode_robokassa_label; ?></td>
                     <td>
                         <?php if ($robokassa_test_mode) { ?>
-                        <input type="radio" name="robokassa_test_mode" value="1" checked="checked" /><?php echo $text_yes; ?>
+                        <input type="radio" name="robokassa_test_mode" value="1" checked="checked" />
+                            <?php echo $text_yes; ?>
                         <input type="radio" name="robokassa_test_mode" value="0" /><?php echo $text_no; ?>
                         <?php } else { ?>
                         <input type="radio" name="robokassa_test_mode" value="1" /><?php echo $text_yes; ?>
-                        <input type="radio" name="robokassa_test_mode" value="0"  checked="checked"/><?php echo $text_no; ?>
+                        <input type="radio" name="robokassa_test_mode" value="0"  checked="checked"/>
+                            <?php echo $text_no; ?>
                         <?php } ?>
                     </td>
                 </tr>
@@ -287,11 +290,13 @@
                     <td><?php echo $test_mode_interkassa_label; ?></td>
                     <td>
                         <?php if ($interkassa_test_mode) { ?>
-                        <input type="radio" name="interkassa_test_mode" value="1" checked="checked" /><?php echo $text_yes; ?>
+                        <input type="radio" name="interkassa_test_mode" value="1" checked="checked" />
+                            <?php echo $text_yes; ?>
                         <input type="radio" name="interkassa_test_mode" value="0" /><?php echo $text_no; ?>
                         <?php } else { ?>
                         <input type="radio" name="interkassa_test_mode" value="1" /><?php echo $text_yes; ?>
-                        <input type="radio" name="interkassa_test_mode" value="0"  checked="checked"/><?php echo $text_no; ?>
+                        <input type="radio" name="interkassa_test_mode" value="0"  checked="checked"/>
+                            <?php echo $text_no; ?>
                         <?php } ?>
                     </td>
                 </tr>
@@ -319,7 +324,6 @@
             <?php } ?>
         </form>
 
-
     </div>
     </div>
 
@@ -341,20 +345,63 @@
     var one_price_total='<?php echo $one_price_total; ?>';
     var one_percent='<?php  $e=($one_percent!=null) ? 1 : 0; echo $e; ?>';
     var old_price;
-    var checkFableOptionPercent;
-    var option_client_down_label='<?php echo $option_client_down_label; ?>';
-    var option_client_expand_label='<?php echo $option_client_expand_label; ?>';
-    $(document).ready(function () {
-        if(one_percent==1)
+
+    function postPercentOne(json){
+        // Get data, sent by the server, and display
+        $('#description_order').val(json.description_order);
+        if($('#one_percent_select option:selected').text()=='100%') {
+            $('#price_label').text(price_label);
+            $('[name="price"]').val(one_price_total);
+            $('#one_percent_text').text(json.one_price_total_text);
+        }else
         {
-            $('#expand_down').text(option_client_down_label);
-            checkFableOptionPercent=true;
-        } else {
-            $('#expand_down').text(option_client_expand_label);
-            $("#option_client_percent_block").fadeOut(0);
-            checkFableOptionPercent=false;
+            $('#price_label').text(price_new_label);
+            $('[name="price"]').val(json.price);
+            $('#one_percent_text').text(json.one_price_total_text);
         }
+    }
+
+    function visibleTypeOfPresentation() {
+        switch($('[name = "type_of_presentation"]:checked').val()) {
+            case '0':
+                $('#one_percent_text, [name = "one_percent"]').fadeIn();
+                $('#several_percent').fadeOut();
+                $.ajax({
+                    url: "<?php echo $post_link; ?>",
+                    dataType: 'json',
+                    data: 'price=' + one_price_total + '&one_percent=' +
+                    $('#one_percent_select option:selected').text() +
+                    '&description_order=' + $('#description_order').val(),
+                    type:'post',
+                    success: postPercentOne
+                });
+                break;
+            case '1':
+            case '2':
+                $('#several_percent').fadeIn();
+                $('#one_percent_text, [name = "one_percent"]').fadeOut();
+                $.ajax({
+                    url: "<?php echo $post_link; ?>",
+                    dataType: 'json',
+                    data: 'price=' + one_price_total + '&one_percent=' +
+                    '100%' +
+                    '&description_order=' + $('#description_order').val(),
+                    type:'post',
+                    success: postPercentOne
+                });
+
+                break;
+        }
+    }
+
+    $(document).ready(function () {
+
         $('#path_page_text_full').text($('#page_host').val() + $('[name = "name_page"]:first').val());
+        if(!page_form || page_form==0) {
+            $('[name="type_of_presentation"]').prop('disabled', true);
+        }
+
+        visibleTypeOfPresentation();
 
         if (!pay2pay_check) {
             $(".pay2pay").fadeOut(1000);
@@ -416,117 +463,93 @@
         });
 
         $('[name = "price"]').blur(function() {
-            if($('[name = "price"]').val()!=old_price && $('#per_cent_of_all_select option:selected').text()!='100%')
+            if($('[name = "price"]').val()!=old_price && $('#one_percent_select option:selected').text()!='100%')
             {
                 alert('<?php echo $price_modif_alert ?>');
                 $('[name = "price"]').val(old_price);
-            } else
+            } /*else
             {
                 if($('[name = "price"]').val()!=old_price)
                 {
                     $.ajax({
                         url: "<?php echo $post_link; ?>",
                         dataType: 'json',
-                        data: 'price=' + $('[name = "price"]').val() + '&percent=' + $('#per_cent_of_all_select option:selected').text() + '&description_order=' + $('#description_order').val(),
+                        data: 'price=' + $('[name = "price"]').val() + '&one_percent=' +
+                                $('#one_percent_select option:selected').text() +
+                                '&description_order=' + $('#description_order').val(),
                         type:'post',
                         success: function(json){
+                            alert('sad');
                             // Здесь мы получаем данные, отправленные сервером и выводим их на экран.
                             $('#description_order').val(json.description_order);
                             $('#price_label').text(price_label);
                             $('[name="price"]').val(json.price);
-                            $('#per_cent_of_all_text').text(json.price_total_text);
+                            $('#one_percent_text').text(json.one_price_total_text);
                             one_price_total=json.price;
                             $('#one_price_total').val(json.price);
                         }
                     });
-                }
+                }*/
 
             }
         });
         $('[name = "price"]').focus(function() {
             old_price=$('[name = "price"]').val();
         });
-
-
-
         //Validation end
 
-        $('#per_cent_of_all_select').change(function() {
 
+
+
+        $('#one_percent_select').change(function() {
                 $.ajax({
                     url: "<?php echo $post_link; ?>",
                     dataType: 'json',
-                    data: 'price=' + one_price_total + '&percent=' + $('#per_cent_of_all_select option:selected').text() + '&description_order=' + $('#description_order').val(),
+                    data: 'price=' + one_price_total + '&one_percent=' +
+                    $('#one_percent_select option:selected').text() +
+                    '&description_order=' + $('#description_order').val(),
                     type:'post',
-                    success: function(json){
-                        // Здесь мы получаем данные, отправленные сервером и выводим их на экран.
-                        $('#description_order').val(json.description_order);
-                        if($('#per_cent_of_all_select option:selected').text()=='100%') {
-                            $('#price_label').text(price_label);
-                            $('[name="price"]').val(one_price_total);
-                            $('#per_cent_of_all_text').text(json.price_total_text);
-                        }else
-                        {
-                            $('#price_label').text(price_new_label);
-                            $('[name="price"]').val(json.price);
-                            $('#per_cent_of_all_text').text(json.price_total_text);
-                        }
-                    }
+                    success: postPercentOne
                 });
-
-         //   $('#per_cent_of_all_select option:selected').text();
         });
 
         $('#name_page_button').click(function () {
             $('#name_page0').prop('disabled',false);
             $('#name_page1').remove();
-
-
         });
 
+
+        /*( terminal_id )
+        0 - save page,
+        1 - to make the data from the number order,
+        2 - create link,
+        3 - to make the data from the number order (form link) */
         $('#get_save_button').click(function()
                 {
-                    $('#terminal_id').val(0); //( terminal_id ) 0 - save page, 1 - to make the data from the number order, 2 - create link, 3 - to make the data from the number order (form link)
+                    $('#terminal_id').val(0);
                     $('#form_link').submit();
                 }
         );
         $('#get_order_id_button').click(function()
                 {
-                    $('#terminal_id').val(1); //( terminal_id ) 0 - save page, 1 - to make the data from the number order, 2 - create link, 3 - to make the data from the number order (form link)
+                    $('#terminal_id').val(1);
                     $('#form_link').submit();
                 }
         );
         $('#get_link_button').click(function()
                 {
-                    $('#terminal_id').val(2); //( terminal_id ) 0 - save page, 1 - to make the data from the number order, 2 - create link, 3 - to make the data from the number order (form link)
+                    $('#terminal_id').val(2);
                     $('#form_link').submit();
                 }
         );
         $('#get_order_id_link_button').click(function()
                 {
-                    $('#terminal_id').val(3); //( terminal_id ) 0 - save page, 1 - to make the data from the number order, 2 - create link, 3 - to make the data from the number order (form link)
+                    $('#terminal_id').val(3);
                     $('#form_link').submit();
                 }
         );
-
-        $('#expand_down').click(function() {
-            if(checkFableOptionPercent) {
-                $("#option_client_percent_block").fadeOut(300);
-                $('#expand_down').text(option_client_expand_label);
-                checkFableOptionPercent=false;
-            } else {
-                $("#option_client_percent_block").fadeIn(300);
-                $('#expand_down').text(option_client_down_label);
-                checkFableOptionPercent=true;
-            }
-
-        });
-
+        $('[name = "type_of_presentation"]').click(visibleTypeOfPresentation);
     });
-
-
-
-
 
 </script>
 
