@@ -403,16 +403,16 @@
 
         visibleTypeOfPresentation();
 
-        if (!pay2pay_check) {
+        if (!pay2pay_check || pay2pay_check==0) {
             $(".pay2pay").fadeOut(1000);
         }
-        if (!robokassa_check) {
+        if (!robokassa_check || robokassa_check==0) {
             $(".robokassa").fadeOut(1000);
         }
-        if (!interkassa_check) {
+        if (!interkassa_check || interkassa_check==0) {
             $(".interkassa").fadeOut(1000);
         }
-        if (!alter_payment_check) {
+        if (!alter_payment_check || alter_payment_check==0) {
             $(".alter_payment").fadeOut(1000);
         }
 
@@ -489,9 +489,9 @@
                             $('#one_price_total').val(json.price);
                         }
                     });
-                }*/
+                }
 
-            }
+            }*/
         });
         $('[name = "price"]').focus(function() {
             old_price=$('[name = "price"]').val();

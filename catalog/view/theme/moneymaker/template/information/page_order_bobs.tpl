@@ -20,6 +20,8 @@
                 <div class="col-sm-12 pos-9">
                     <h1><?php echo $heading_title; ?></h1>
                     <br/>
+
+                    <!-- BEGIN ORDER -->
                     <?php if(isset($order)) { ?>
                     <table class="list-cart">
                         <colgroup>
@@ -47,10 +49,10 @@
                             <td class="simplecheckout-recurring-product" style="border:none;"><img
                                         src="<?php echo $additional_path ?>catalog/view/theme/default/image/reorder.png"
                                         alt="" title="" style="float:left;"/>
-                    <span style="float:left;line-height:18px; margin-left:10px;">
-                    <strong><?php echo $text_recurring_item ?></strong>
-                        <?php echo $product['profile_description'] ?>
-                    </span>
+                                <span style="float:left;line-height:18px; margin-left:10px;">
+                                <strong><?php echo $text_recurring_item ?></strong>
+                                    <?php echo $product['profile_description'] ?>
+                                </span>
                             </td>
                         </tr>
                         <?php } ?>
@@ -59,7 +61,8 @@
                                 <?php if ($product['thumb']) { ?>
                                 <a href="<?php echo $product['href']; ?>"><img src="<?php echo $product['thumb']; ?>"
                                                                                alt="<?php echo $product['name']; ?>"
-                                                                               title="<?php echo $product['name']; ?>"/></a>
+                                                                               title="<?php echo $product['name']; ?>"/>
+                                </a>
                                 <?php } ?>
                             </td>
                             <td class="name">
@@ -72,7 +75,6 @@
                                 </div>
                                 <?php } ?>
                                 <a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a>
-
                                 <div class="options">
                                     <?php foreach ($product['option'] as $option) { ?>
                                     &nbsp;
@@ -85,7 +87,6 @@
                                         : <?php echo $product['profile_name'] ?></small>
                                     <?php } ?>
                                 </div>
-
                             </td>
                             <td class="model"><?php echo $product['model']; ?></td>
                             <td class="quantity"><?php echo $product['quantity']; ?></td>
@@ -110,36 +111,112 @@
                     <p id="description"><?php echo $description_order; ?></p>
                     <?php } ?>
                     <?php } ?>
-                    <?php if(isset($option_client_percent)) { ?>
-                    <h3><?php echo $option_client_percent_label ?></h3>
-                    <div style="padding-left: 15px;">
-                        <?php foreach ($option_client_percent as $client_percent) { ?>
-                            <span id="option_client_percent">
-                                <input type="radio" name="option_client_percent" value="<?php echo $client_percent['percent'] ?>"
-                                <?php if($option_client_percent_default==$client_percent['percent']){
-                                ?> checked="checked" <?php } ?> />
-                                <?php echo $client_percent['percent'] ?>% - <?php echo $client_percent['price']?>
-                            </span>
-                        <?php } ?>
-                    </div>
-                    <?php } ?>
-                    <h3><?php echo $list_payment; ?></h3>
+                    <!-- END ORDER -->
+                    <?php switch($type_of_presentation) {
+                    case 0: ?>
+                            <h3><?php echo $list_payment_label; ?></h3>
+                            <ul>
+                                <?php if(!empty($alter_payment_check)) { ?>
+                                <li><?php echo $alter_payment_text; ?></a></li>
+                                <?php } ?>
+                                <?php if(!empty($pay2pay_check)) { ?>
+                                <li><a id="link_pay2pay" target="_blank" href="<?php echo $link_pay2pay; ?>">
+                                        <?php echo $link_pay2pay_label; ?></a></li>
+                                <?php } ?>
+                                <?php if(!empty($robokassa_check)) { ?>
+                                <li><a id="link_robokassa" target="_blank" href="<?php echo $link_robokassa; ?>">
+                                        <?php echo $link_robokassa_label; ?></a></li>
+                                <?php } ?>
+                                <?php if(!empty($interkassa_check)) { ?>
+                                <li><a id="link_interkassa" target="_blank" href="<?php echo $link_interkassa; ?>">
+                                        <?php echo $link_interkassa_label; ?></a></li>
+                                <?php } ?>
+                            </ul>
+                    <?php break;
+                    case 1: ?>
+                            <h3><?php echo $several_percent_label ?></h3>
+                            <div style="padding-left: 15px;">
+                                <?php foreach ($several_percent as $percent) { ?>
+                                    <span id="several_percent">
+                                        <input type="radio"
+                                               name="several_percent_radio"
+                                               value="<?php echo $percent['percent'] ?>"
+                                        <?php if($several_percent_default==$percent['percent']){
+                                        ?> checked="checked" <?php } ?> />
+                                        <?php echo $percent['percent'] ?>% - <?php echo $percent['price']?>
+                                    </span>
+                                <?php } ?>
+                            </div>
+                            </br>
+                            <h3><?php echo $list_payment_label; ?></h3>
+                            <ul>
+                                <?php if(!empty($alter_payment_check)) { ?>
+                                <li><?php echo $alter_payment_text; ?></a></li>
+                                <?php } ?>
+                                <?php if(!empty($pay2pay_check)) { ?>
+                                <li><a id="link_pay2pay" target="_blank" href="<?php echo $link_pay2pay; ?>">
+                                        <?php echo $link_pay2pay_label; ?></a></li>
+                                <?php } ?>
+                                <?php if(!empty($robokassa_check)) { ?>
+                                <li><a id="link_robokassa" target="_blank" href="<?php echo $link_robokassa; ?>">
+                                        <?php echo $link_robokassa_label; ?></a></li>
+                                <?php } ?>
+                                <?php if(!empty($interkassa_check)) { ?>
+                                <li><a id="link_interkassa" target="_blank" href="<?php echo $link_interkassa; ?>">
+                                        <?php echo $link_interkassa_label; ?></a></li>
+                                <?php } ?>
+                            </ul>
+                    <?php break;
+                        case 2: ?>
+                            <h3><?php echo $list_payment_label; ?></h3>
                     <ul>
-                        <?php if(!empty($alter_payment_check)) { ?>
-                        <li><?php echo $alter_payment_text; ?></a></li>
-                        <?php } ?>
-                        <?php if(!empty($link_pay2pay)) { ?>
-                        <li><a id="link_pay2pay" target="_blank" href="<?php echo $link_pay2pay; ?>"><?php echo $link_pay2pay_label; ?></a></li>
-                        <?php } ?>
-                        <?php if(!empty($link_robokassa)) { ?>
-                        <li><a id="link_robokassa" target="_blank" href="<?php echo $link_robokassa; ?>"><?php echo $link_robokassa_label; ?></a></li>
-                        <?php } ?>
-                        <?php if(!empty($link_interkassa)) { ?>
-                        <li><a id="link_interkassa" target="_blank" href="<?php echo $link_interkassa; ?>"><?php echo $link_interkassa_label; ?></a></li>
+                    <?php if(!empty($alter_payment_check)) { ?>
+                    <li><?php echo $alter_payment_text; ?></a></li>
+                    </ul>
+                    <?php } ?>
+                    <ul class="link_box_general">
+                        <?php foreach($links_structure as $key => $links) { ?>
+                        <li class="link_box">
+                            <h5><?php echo sprintf($several_percent_variable, $key) ?></h5>
+                            <ul>
+                                <?php foreach($links as $link) {
+                                    switch($link['type']) {
+                                    case 'link_pay2pay': ?>
+                                        <?php if(!empty($pay2pay_check)) { ?>
+                                        <li><a id="link_pay2pay<?php echo $link['percent'] ?>"
+                                               target="_blank"
+                                               href="<?php echo $link['link']; ?>">
+                                                <?php echo $link_pay2pay_label; ?></a></li>
+                                        <?php } ?>
+                                        <?php break;
+                                    case 'link_robokassa': ?>
+                                        <?php if(!empty($robokassa_check)) { ?>
+                                        <li><a id="link_robokassa<?php echo $link['percent'] ?>"
+                                               target="_blank"
+                                               href="<?php echo $link['link']; ?>">
+                                                <?php echo $link_robokassa_label; ?></a></li>
+                                        <?php } ?>
+                                        <?php break;
+                                    case 'link_interkassa': ?>
+                                        <?php if(!empty($interkassa_check)) { ?>
+                                        <li><a id="link_interkassa<?php echo $link['percent'] ?>"
+                                               target="_blank"
+                                               href="<?php echo $link['link']; ?>">
+                                                <?php echo $link_interkassa_label; ?></a></li>
+                                        <?php } ?>
+                                        <?php break; ?>
+                                    <?php } ?>
+                                <?php } ?>
+                            </ul>
+                        </li>
                         <?php } ?>
                     </ul>
+                    <?php break;
+                        } ?>
 
 
+
+                    <!-- PARAMETERS PAGE -->
                     <TABLE class="form">
                         <?php if($currency_code_check!=0) { ?>
                         <tr>
@@ -148,7 +225,7 @@
                         </tr>
                         <?php } ?>
 
-                        <?php if($price!='') { ?>
+                        <?php if(isset($price) || $price!='') { ?>
                         <tr>
                             <td><? echo $price_label; ?></td>
                             <td><?php echo $price; ?></td>
@@ -182,7 +259,6 @@
                             <td><? echo $notes; ?></td>
                         </tr>
                         <?php } ?>
-
                     </TABLE>
 
                  <!--   <div class="row pagination_buttons">
@@ -192,8 +268,8 @@
                         </div>
                     </div> -->
                     <p><?php echo $footer_label;?>
-                        <a href="mailto:<?php echo $email_support; ?>"><?php echo $email_support; ?></a></p>
-
+                        <a href="mailto:<?php echo $email_support; ?>"><?php echo $email_support; ?></a>
+                    </p>
                     <small><?php echo $footer_small_label; ?></small>
 
                 </div>
@@ -204,49 +280,49 @@
 </div>
 <input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
 <?php echo $footer; ?>
-<script type="text/javascript"><!--
+
+<script type="text/javascript">
+    var type_of_presentation = '<?php echo $type_of_presentation; ?>';
     $(document).ready(function () {
-        getPercentOption();
-        $('[name = "option_client_percent"]').bind('change',function() {
+        if(type_of_presentation==1) {
             getPercentOption();
-        });
-
-    });
-function getPercentOption() {
-    $.ajax({
-        url: 'index.php?route=information/page_order_bobs/post',
-        dataType: 'json',
-        data: 'percent=' + $("[name = 'option_client_percent']").filter(':checked').val()+'&order_id='+
-        $('[name = "order_id"]').val(),
-        type:'post',
-        beforeSend: function(){
-            $('#link_pay2pay').addClass('link_disabled'); //link_disabled
-            $('#link_robokassa').addClass('link_disabled'); //link_disabled
-            $('#link_interkassa').addClass('link_disabled'); //link_disabled
-
-        },
-        success: function(json){
-            // Здесь мы получаем данные, отправленные сервером и выводим их на экран.
-            if(json.link_pay2pay!== undefined)
-            {
-                alert('edas');
-                $('#link_pay2pay').removeClass('link_disabled').attr("href", json.link_pay2pay);
-            }
-            if(json.link_robokassa!== undefined)
-            {
-                alert('edas');
-                $('#link_robokassa').removeClass('link_disabled').attr("href", json.link_robokassa);
-            }
-            if(json.link_interkassa!== undefined)
-            {
-                alert('edas');
-                $('#link_interkassa').removeClass('link_disabled').attr("href", json.link_interkassa);
-            }
-
-        },
-        error: function(xhr, ajaxOptions, thrownError) {
-            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            $('[name = "several_percent_radio"]').bind('change',function() {
+                getPercentOption();
+            });
         }
     });
-}
+    function getPercentOption() {
+        $.ajax({
+            url: 'index.php?route=information/page_order_bobs/post',
+            dataType: 'json',
+            data: 'percent=' + $("[name = 'several_percent_radio']").filter(':checked').val()+'&order_id='+
+            $('[name = "order_id"]').val(),
+            type:'post',
+            beforeSend: function(){
+                $('#link_pay2pay').addClass('link_disabled'); //link_disabled
+                $('#link_robokassa').addClass('link_disabled'); //link_disabled
+                $('#link_interkassa').addClass('link_disabled'); //link_disabled
+
+            },
+            success: function(json){
+                // Здесь мы получаем данные, отправленные сервером и выводим их на экран.
+                if(json.link_pay2pay!== undefined)
+                {
+                    $('#link_pay2pay').removeClass('link_disabled').attr("href", json.link_pay2pay);
+                }
+                if(json.link_robokassa!== undefined)
+                {
+                    $('#link_robokassa').removeClass('link_disabled').attr("href", json.link_robokassa);
+                }
+                if(json.link_interkassa!== undefined)
+                {
+                    $('#link_interkassa').removeClass('link_disabled').attr("href", json.link_interkassa);
+                }
+
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    }
 //--></script>

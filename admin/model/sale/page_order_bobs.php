@@ -360,7 +360,7 @@ class ModelSalePageOrderBobs extends Model
      * @return int
      * @author  Bobs
      */
-    private function getPageId($array_page)
+    private function getPageId(array &$array_page)
     {
         if (isset($array_page['page_id'])) {
             $page_id = $array_page['page_id'];
