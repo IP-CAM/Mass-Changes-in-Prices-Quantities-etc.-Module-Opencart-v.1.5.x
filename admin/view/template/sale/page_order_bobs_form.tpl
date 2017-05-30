@@ -467,31 +467,7 @@
             {
                 alert('<?php echo $price_modif_alert ?>');
                 $('[name = "price"]').val(old_price);
-            } /*else
-            {
-                if($('[name = "price"]').val()!=old_price)
-                {
-                    $.ajax({
-                        url: "<?php echo $post_link; ?>",
-                        dataType: 'json',
-                        data: 'price=' + $('[name = "price"]').val() + '&one_percent=' +
-                                $('#one_percent_select option:selected').text() +
-                                '&description_order=' + $('#description_order').val(),
-                        type:'post',
-                        success: function(json){
-                            alert('sad');
-                            // Здесь мы получаем данные, отправленные сервером и выводим их на экран.
-                            $('#description_order').val(json.description_order);
-                            $('#price_label').text(price_label);
-                            $('[name="price"]').val(json.price);
-                            $('#one_percent_text').text(json.one_price_total_text);
-                            one_price_total=json.price;
-                            $('#one_price_total').val(json.price);
-                        }
-                    });
-                }
-
-            }*/
+            }
         });
         $('[name = "price"]').focus(function() {
             old_price=$('[name = "price"]').val();
