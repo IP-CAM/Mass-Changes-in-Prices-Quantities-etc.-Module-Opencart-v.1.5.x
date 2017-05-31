@@ -292,6 +292,7 @@ class ControllerInformationPageOrderBobs extends Controller
         $this->data['several_percent_label'] = $this->language->get('several_percent_label');
         $this->data['several_percent_variable'] = $this->language->get('several_percent_variable');
 
+        $this->data['variable_name'] = $page['variable_name'];
         $this->data['receiver_of_product_label'] = $this->language->get('receiver_of_product_label');
         $this->data['delivery_address_label'] = $this->language->get('delivery_address_label');
         $this->data['delivery_method_label'] = $this->language->get('delivery_method_label');
@@ -342,7 +343,6 @@ class ControllerInformationPageOrderBobs extends Controller
                 $this->data['price'] = null;
                 $links_structure = array();
                 foreach ($page['links'] as $link) {
-
                     if (array_key_exists($link['percent'], $links_structure)) {
                         $links_structure[$link['percent']][] = $link;
                     } else {
@@ -350,6 +350,8 @@ class ControllerInformationPageOrderBobs extends Controller
                         $links_structure[$link['percent']][] = $link;
                     }
                 }
+                krsort($links_structure);
+                //$links_structure = array_reverse($links_structure);
                 $this->data['links_structure'] = $links_structure;
                 break;
         }
@@ -366,11 +368,14 @@ class ControllerInformationPageOrderBobs extends Controller
         $this->data['receiver_of_product'] = $page['receiver_of_product'];
         $this->data['delivery_address'] = $page['delivery_address'];
         $this->data['delivery_method'] = $page['delivery_method'];
+
         $this->data['notes'] = $page['notes'];
+        $this->data['notes_up_position'] = $page['notes_up_position'];
 
         $this->data['button_continue'] = $this->language->get('button_continue');
 
         $this->data['description_order'] = $page['description_order'];
+        $this->data['variable_value'] = $page['variable_value'];
 
         $this->data['continue'] = $this->url->link('common/home');
 

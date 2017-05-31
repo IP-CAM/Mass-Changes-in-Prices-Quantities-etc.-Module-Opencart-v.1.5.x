@@ -26,9 +26,12 @@ class ModelSalePageOrderBobs extends Model
             "`price` = '" . $this->db->escape($array_page['price']) . "', " .
             "`receiver_of_product` = '" . $this->db->escape($array_page['receiver_of_product']) . "', " .
             "`description_order` = '" . $this->db->escape($array_page['description_order']) . "', " .
+            "`variable_name` = '" . $this->db->escape($array_page['variable_name']) . "', " .
+            "`variable_value` = '" . $this->db->escape($array_page['variable_value']) . "', " .
             "`delivery_address` = '" . $this->db->escape($array_page['delivery_address']) . "', " .
             "`delivery_method` = '" . $this->db->escape($array_page['delivery_method']) . "', " .
             "`notes` = '" . $this->db->escape($array_page['notes']) . "', " .
+            "`notes_up_position` = " . (int)$array_page['notes_up_position'] . ", " .
             "`pay2pay_check` = '" . (int)$array_page['pay2pay_check'] . "', " .
             "`pay2pay_identifier_shop` = '" . $this->db->escape($array_page['pay2pay_identifier_shop']) . "', " .
             "`pay2pay_key_secret` = '" . $this->db->escape($array_page['pay2pay_key_secret']) . "', " .
@@ -72,6 +75,8 @@ class ModelSalePageOrderBobs extends Model
     private function getParametersNewValidate()
     {
         $sql = "SELECT
+            `parameters_id`,
+            `variable_name`,
             `pay2pay_check`,
             `pay2pay_identifier_shop`,
             `pay2pay_key_secret`,
@@ -86,9 +91,7 @@ class ModelSalePageOrderBobs extends Model
             `alter_payment_check`,
             `alter_payment_text` FROM
             `" . DB_PREFIX . "page_order_bobs_parameters`
-            WHERE
-            `parameters_id`=IF(`parameters_id`=1,1,0)";
-
+            ORDER BY `parameters_id` DESC LIMIT 1";
         $query = $this->db->query($sql);
         return $query->row;
     }
@@ -113,9 +116,11 @@ class ModelSalePageOrderBobs extends Model
             `price` ,
             `receiver_of_product`,
             `description_order`,
+            `variable_value`,
             `delivery_address`,
             `delivery_method`,
             `notes`,
+            `notes_up_position`,
             `one_price_total`,
             `one_percent`,
             `several_percent_default`,
@@ -426,9 +431,12 @@ class ModelSalePageOrderBobs extends Model
             "`price` = '" . $this->db->escape($array_page['price']) . "', " .
             "`receiver_of_product` = '" . $this->db->escape($array_page['receiver_of_product']) . "', " .
             "`description_order` = '" . $this->db->escape($array_page['description_order']) . "', " .
+            "`variable_name` = '" . $this->db->escape($array_page['variable_name']) . "', " .
+            "`variable_value` = '" . $this->db->escape($array_page['variable_value']) . "', " .
             "`delivery_address` = '" . $this->db->escape($array_page['delivery_address']) . "', " .
             "`delivery_method` = '" . $this->db->escape($array_page['delivery_method']) . "', " .
             "`notes` = '" . $this->db->escape($array_page['notes']) . "', " .
+            "`notes_up_position` = " . (int)$array_page['notes_up_position'] . ", " .
             "`pay2pay_check` = '" . (int)$array_page['pay2pay_check'] . "', " .
             "`pay2pay_identifier_shop` = '" . $this->db->escape($array_page['pay2pay_identifier_shop']) . "', " .
             "`pay2pay_key_secret` = '" . $this->db->escape($array_page['pay2pay_key_secret']) . "', " .

@@ -44,9 +44,15 @@ $_['option_client_percent_default_label']       	  = 'По умолчанию';
 $_['description_order']       	  = 'Описание заказа';
 
 $_['receiver_of_product'] = 'Получатель товара';
+$_['variable_text'] = 'Вы можете сами выбрать название и значение этого поля';
+
+
 $_['delivery_address'] = 'Адрес доставки';
 $_['delivery_method'] = 'Метод доставки';
 $_['notes'] = 'Примечания';
+$_['text_notes_up'] = 'Отображать в верхней части страницы оплаты';
+$_['text_notes_down'] = 'Отображать в нижней части страницы оплаты';
+
 $_['notes_client_of_order'] = 'Примечание клиента к заказу:';
 
 
@@ -98,6 +104,7 @@ $_['link_interkassa_label'] = 'Ссылка на оплату Interkassa';
 $_['no_number_order'] = 'Заказа с таким номером нет';
 $_['error_name_page'] = 'Ошибка в названии создаваемой страницы';
 $_['error_duplicate_page'] = 'Такая страница в магазине уже есть';
+$_['error_variable_duplicate_page'] = 'Такая страница в магазине была создана ранее';
 $_['null_number_order'] = 'Введите номер заказа для внесения данных';
 
 //Ordinare

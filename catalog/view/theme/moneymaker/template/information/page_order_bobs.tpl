@@ -111,6 +111,16 @@
                     <p id="description"><?php echo $description_order; ?></p>
                     <?php } ?>
                     <?php } ?>
+
+                    <?php if($notes!='' && $notes_up_position) { ?>
+                        <TABLE>
+                            <tr>
+                                <td style="width: 100px;"><? echo $notes_label; ?></td>
+                                <td><? echo $notes; ?></td>
+                            </tr>
+                        </TABLE>
+                    <?php } ?>
+
                     <!-- END ORDER -->
                     <?php switch($type_of_presentation) {
                     case 0: ?>
@@ -169,48 +179,48 @@
                     <?php break;
                         case 2: ?>
                             <h3><?php echo $list_payment_label; ?></h3>
-                    <ul>
-                    <?php if(!empty($alter_payment_check)) { ?>
-                    <li><?php echo $alter_payment_text; ?></a></li>
-                    </ul>
-                    <?php } ?>
-                    <ul class="link_box_general">
-                        <?php foreach($links_structure as $key => $links) { ?>
-                        <li class="link_box">
-                            <h5><?php echo sprintf($several_percent_variable, $key) ?></h5>
                             <ul>
-                                <?php foreach($links as $link) {
-                                    switch($link['type']) {
-                                    case 'link_pay2pay': ?>
-                                        <?php if(!empty($pay2pay_check)) { ?>
-                                        <li><a id="link_pay2pay<?php echo $link['percent'] ?>"
-                                               target="_blank"
-                                               href="<?php echo $link['link']; ?>">
-                                                <?php echo $link_pay2pay_label; ?></a></li>
+                            <?php if(!empty($alter_payment_check)) { ?>
+                            <li><?php echo $alter_payment_text; ?></a></li>
+                            </ul>
+                            <?php } ?>
+                            <ul class="link_box_general">
+                                <?php foreach($links_structure as $key => $links) { ?>
+                                <li class="link_box">
+                                    <h5><?php echo sprintf($several_percent_variable, $key) ?></h5>
+                                    <ul>
+                                        <?php foreach($links as $link) {
+                                            switch($link['type']) {
+                                            case 'link_pay2pay': ?>
+                                                <?php if(!empty($pay2pay_check)) { ?>
+                                                <li><a id="link_pay2pay<?php echo $link['percent'] ?>"
+                                                       target="_blank"
+                                                       href="<?php echo $link['link']; ?>">
+                                                        <?php echo $link_pay2pay_label; ?></a></li>
+                                                <?php } ?>
+                                                <?php break;
+                                            case 'link_robokassa': ?>
+                                                <?php if(!empty($robokassa_check)) { ?>
+                                                <li><a id="link_robokassa<?php echo $link['percent'] ?>"
+                                                       target="_blank"
+                                                       href="<?php echo $link['link']; ?>">
+                                                        <?php echo $link_robokassa_label; ?></a></li>
+                                                <?php } ?>
+                                                <?php break;
+                                            case 'link_interkassa': ?>
+                                                <?php if(!empty($interkassa_check)) { ?>
+                                                <li><a id="link_interkassa<?php echo $link['percent'] ?>"
+                                                       target="_blank"
+                                                       href="<?php echo $link['link']; ?>">
+                                                        <?php echo $link_interkassa_label; ?></a></li>
+                                                <?php } ?>
+                                                <?php break; ?>
+                                            <?php } ?>
                                         <?php } ?>
-                                        <?php break;
-                                    case 'link_robokassa': ?>
-                                        <?php if(!empty($robokassa_check)) { ?>
-                                        <li><a id="link_robokassa<?php echo $link['percent'] ?>"
-                                               target="_blank"
-                                               href="<?php echo $link['link']; ?>">
-                                                <?php echo $link_robokassa_label; ?></a></li>
-                                        <?php } ?>
-                                        <?php break;
-                                    case 'link_interkassa': ?>
-                                        <?php if(!empty($interkassa_check)) { ?>
-                                        <li><a id="link_interkassa<?php echo $link['percent'] ?>"
-                                               target="_blank"
-                                               href="<?php echo $link['link']; ?>">
-                                                <?php echo $link_interkassa_label; ?></a></li>
-                                        <?php } ?>
-                                        <?php break; ?>
-                                    <?php } ?>
+                                    </ul>
+                                </li>
                                 <?php } ?>
                             </ul>
-                        </li>
-                        <?php } ?>
-                    </ul>
                     <?php break;
                         } ?>
 
@@ -238,7 +248,12 @@
                             <td><?php echo $receiver_of_product; ?></td>
                         </tr>
                         <?php } ?>
-
+                        <?php if($variable_value!='') { ?>
+                        <tr>
+                            <td><? echo $variable_name; ?></td>
+                            <td><?php echo $variable_value; ?></td>
+                        </tr>
+                        <?php } ?>
                         <?php if($delivery_address!='') { ?>
                         <tr>
                             <td><? echo $delivery_address_label; ?></td>
@@ -253,7 +268,7 @@
                         </tr>
                         <?php } ?>
 
-                        <?php if($notes!='') { ?>
+                        <?php if($notes!='' && !$notes_up_position) { ?>
                         <tr>
                             <td><? echo $notes_label; ?></td>
                             <td><? echo $notes; ?></td>

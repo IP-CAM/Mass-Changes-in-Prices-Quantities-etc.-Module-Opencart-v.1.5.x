@@ -190,25 +190,53 @@
                                   style="margin: 0px; width: 450px; height: 92px;"><?php echo $description_order; ?></textarea>
                     </td>
                 </tr>
-                <tr>
-                    <td><?php echo $delivery_address_label; ?></td>
-                    <td><input type="text" name="delivery_address" value="<?php echo $delivery_address; ?>"/></td>
-                </tr>
-                <tr>
-                    <td><?php echo $delivery_method_label; ?></td>
-                    <td><input type="text" name="delivery_method" value="<?php echo $delivery_method; ?>"/></td>
-                </tr>
-                <tr>
-                    <td><?php echo $notes_label; ?></td>
-                    <td><textarea type="text"
-                                  id="notes"
-                                  name="notes"
-                                  style="margin: 0px; width: 450px; height: 50px;"><?php echo $notes; ?></textarea>
-                        <?php if(isset($notes_client)) { ?>
-                        <p><ins><?php echo $notes_client;?></ins></p>
-                        <?php } ?>
-                    </td>
-                </tr>
+                <?php if($page_form) { ?>
+                    <tr>
+                        <td><input type="text" name="variable_name" value="<?php echo $variable_name; ?>"/></td>
+                        <td>
+                            <input type="text" name="variable_value" value="<?php echo $variable_value; ?>"/>
+                            <spane style="padding-left: 5px"><?php echo $variable_text; ?></spane>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><?php echo $delivery_address_label; ?></td>
+                        <td><input type="text" name="delivery_address" value="<?php echo $delivery_address; ?>"/></td>
+                    </tr>
+                    <tr>
+                        <td><?php echo $delivery_method_label; ?></td>
+                        <td><input type="text" name="delivery_method" value="<?php echo $delivery_method; ?>"/></td>
+                    </tr>
+                    <tr>
+                        <td><?php echo $notes_label; ?></td>
+                        <td><div id="notes_box" style="float: left">
+                                <textarea type="text"
+                                          id="notes"
+                                          name="notes"
+                                          style="margin: 0px; width: 450px; height: 50px;"><?php echo $notes; ?>
+                                </textarea>
+                                <?php if(isset($notes_client)) { ?>
+                                <p><ins><?php echo $notes_client;?></ins></p>
+                                <?php } ?>
+                            </div>
+                                <div>
+                                    <?php if ($notes_up_position) { ?>
+                                    <input type="radio" name="notes_up_position" value="1" checked="checked" />
+                                    <?php echo $text_notes_up; ?><br><br>
+                                    <input type="radio" name="notes_up_position" value="0" />
+                                    <?php echo $text_notes_down; ?>
+                                    <?php } else { ?>
+                                    <input type="radio" name="notes_up_position" value="1" />
+                                    <?php echo $text_notes_up; ?><br><br>
+                                    <input type="radio" name="notes_up_position" value="0"  checked="checked"/>
+                                    <?php echo $text_notes_down; ?>
+                                    <?php } ?>
+                                </div>
+                        </td>
+                        <td>
+
+                        </td>
+                    </tr>
+                <?php } ?>
             </TABLE>
 
             <div>
