@@ -212,8 +212,7 @@
                                 <textarea type="text"
                                           id="notes"
                                           name="notes"
-                                          style="margin: 0px; width: 450px; height: 50px;"><?php echo $notes; ?>
-                                </textarea>
+                                          style="margin: 0px; width: 450px; height: 50px;"><?php echo $notes; ?></textarea>
                                 <?php if(isset($notes_client)) { ?>
                                 <p><ins><?php echo $notes_client;?></ins></p>
                                 <?php } ?>
@@ -342,10 +341,10 @@
                 <tr>
                     <td><?php echo $alter_payment_text_label; ?></td>
                     <td>
-                        <textarea type="text"
-                                  name="alter_payment_text"
-                                  style="margin: 0px; width: 450px; height: 50px;"><?php echo $alter_payment_text; ?>
-                        </textarea>
+                        <textarea
+                        type="text"
+                        name="alter_payment_text"
+                        style="margin: 0px; width: 450px; height: 50px;"><?php echo $alter_payment_text; ?></textarea>
                     </td>
                 </tr>
             </TABLE>
@@ -495,6 +494,26 @@
             {
                 alert('<?php echo $price_modif_alert ?>');
                 $('[name = "price"]').val(old_price);
+            } else {
+                if($('[name = "price"]').val()!=old_price)
+                {
+                    $.ajax({
+                        url: "<?php echo $post_link; ?>",
+                        dataType: 'json',
+                        data: 'price=' + $('[name = "price"]').val() + '&one_percent=' + $('#one_percent_select option:selected').text() + '&description_order=' + $('#description_order').val(),
+                        type:'post',
+                        success: function(json){
+                            // Здесь мы получаем данные, отправленные сервером и выводим их на экран.
+                            $('#description_order').val(json.description_order);
+                            $('#price_label').text(price_label);
+                            $('[name="price"]').val(json.price);
+                            $('#one_percent_text').text(json.one_price_total_text);
+                            one_price_total=json.price;
+                            $('#one_price_total').val(json.price);
+                        }
+                    });
+                }
+
             }
         });
         $('[name = "price"]').focus(function() {

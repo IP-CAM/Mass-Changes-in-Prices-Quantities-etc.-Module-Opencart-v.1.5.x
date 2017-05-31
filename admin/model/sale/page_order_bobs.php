@@ -200,6 +200,26 @@ class ModelSalePageOrderBobs extends Model
 
 
     /**
+     * Return Name Page page by id page
+     *
+     * @param int $page_id
+     * @return string
+     * @author  Bobs
+     */
+    public function getNamePageByPage($page_id)
+    {
+        $sql = "SELECT * FROM `" . DB_PREFIX . "url_alias` WHERE
+                `query` LIKE 'page_order_bobs_id=" . (int)$page_id . "'";
+        $obj_sql = $this->db->query($sql);
+        if($obj_sql->num_rows == 0) {
+            return false;
+        } else {
+            return $obj_sql->row['keyword'];
+        }
+
+    }
+
+    /**
      * Return Page page by page
      *
      * @param int $page_id

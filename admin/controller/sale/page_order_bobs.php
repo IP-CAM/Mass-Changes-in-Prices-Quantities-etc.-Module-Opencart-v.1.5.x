@@ -253,7 +253,7 @@ class ControllerSalePageOrderBobs extends Controller
                     break;
                 case 2:
                     $this->model_sale_page_order_bobs->setParameters($array_post_parameter);//Save parameters
-                    $array_link = $this->getLink($array_post_parameter);  //Create link
+                    $array_link = $this->getLink($array_post_parameter, $array_post_parameter['one_percent']);  //Create link
                     $array_post_parameter = array_merge($array_post_parameter, $array_link);
                     $this->getForm($array_post_parameter, false);
                     break;
@@ -802,7 +802,20 @@ class ControllerSalePageOrderBobs extends Controller
     {
         $array_link = Array();
         $i = 0;
-        if (!empty($array_page['several_percent_array'])) {
+
+        if ($array_page['type_of_presentation']==0) {
+            $ar_links = $this->getLink($array_page, $array_page['one_percent'] );
+            foreach ($ar_links as $name => $link) {
+                $array_link['links'][$i]['link'] = $link;
+                $array_link['links'][$i]['percent'] = $array_page['one_percent'];
+                $array_link['links'][$i]['type'] = $name;
+                $array_link['links'][$i]['default'] = 1;
+                $i++;
+            }
+        }
+
+        //several check
+        if ($array_page['type_of_presentation']==1 || $array_page['type_of_presentation']==2) {
             foreach ($array_page['several_percent_array'] as $key => $percent) {
                 $ar_links = $this->getLink($array_page, $percent);
                 foreach ($ar_links as $name => $link) {
@@ -813,8 +826,9 @@ class ControllerSalePageOrderBobs extends Controller
                     $i++;
                 }
             }
-            $array_page = array_merge($array_link, $array_page);
         }
+        $array_page = array_merge($array_link, $array_page);
+
 
         $root_default_page = $this->model_sale_page_order_bobs->getParameters();
         switch ($array_page['type_of_presentation']) {
@@ -994,8 +1008,18 @@ class ControllerSalePageOrderBobs extends Controller
         //ATTENTION
         if ($this->request->post['terminal_id'] == 1) {
             $get_order_id = $this->request->post['get_order_id'];
+            $name_old_and_new_name_identical=false;
             $name_page = $this->model_sale_page_order_bobs->getNamePageByOrder($get_order_id);
-            if (!$name_page === false) {
+            if(isset($this->request->get['page_id']))
+            {
+                $page_id = $this->request->get['page_id'];
+                $name_page_old = $this->model_sale_page_order_bobs->getNamePageByPage($page_id);
+                if($name_page==$name_page_old)
+                {
+                    $name_old_and_new_name_identical=true;
+                }
+            }
+            if (!$name_page === false && !$name_old_and_new_name_identical) {
                 $name_site = 'http://' . $_SERVER['HTTP_HOST'] . '/' . $name_page;
                 $this->data['attentions'][] = sprintf($this->language->get('warning_duplicate_order'), $name_site);
             }
@@ -1044,9 +1068,6 @@ class ControllerSalePageOrderBobs extends Controller
         {
             $array_post_parameter['type_of_presentation'] = $root_default_page['type_of_presentation'];
         }
-        /*if (!isset($array_post_parameter['type_of_presentation']) || $array_post_parameter['type_of_presentation']=="") {
-            $array_post_parameter['type_of_presentation'] = $root_default_page['type_of_presentation']; // TODO
-        }*/
 
         if (empty($array_post_parameter['one_percent'])) {
             $array_post_parameter['one_percent'] = $root_default_page['one_percent'];
@@ -1102,7 +1123,6 @@ class ControllerSalePageOrderBobs extends Controller
         if (empty($array_post_parameter['alter_payment_text'])) {
             $array_post_parameter['alter_payment_text'] = $root_default_page['alter_payment_text'];
         }
-        $array_post_parameter['alter_payment_text'] = trim($array_post_parameter['alter_payment_text']);
         return $array_post_parameter;
     }
 
@@ -1124,12 +1144,20 @@ class ControllerSalePageOrderBobs extends Controller
         $linkInterkassa = "";
         $order_id = $array_post_parameter['order_id']; // number of order
         $currency_code = $array_post_parameter['currency_code'];
-        $price = $array_post_parameter['price']; //Summa
+        if($array_post_parameter['type_of_presentation']==0)
+        {
+            $price = $array_post_parameter['one_price_total']; //Summa
+        } else{
+            $price = $array_post_parameter['price']; //Summa
+        }
+
         $price = (float)$price; //TODO
 
         $description_order = (string)$array_post_parameter['description_order'];
 
         if ($percent != 100) {
+            $price = ((float)$price * (int)$percent) / 100; //update
+            $price = floor($price); //delete  TODO
             $percent_label = $this->language->get('percent_label');
             $description_order .= ' ' . $percent_label . ' ' . $percent . '%';  //update
         }

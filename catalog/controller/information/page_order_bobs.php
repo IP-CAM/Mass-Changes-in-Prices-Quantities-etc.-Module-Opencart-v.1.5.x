@@ -101,7 +101,7 @@ class ControllerInformationPageOrderBobs extends Controller
         $query = $this->db->query($sql);
         $page = $query->row;
         $sql = "SELECT * FROM `" .
-            DB_PREFIX . "page_order_bobs_links`  WHERE `page_id`=" . (int)$page_id;
+            DB_PREFIX . "page_order_bobs_links` WHERE `page_id`=" . (int)$page_id . " ORDER BY `link_id`";
         $links = $this->db->query($sql);
         $links = $links->rows;
         $page['links'] = $links;
@@ -290,7 +290,7 @@ class ControllerInformationPageOrderBobs extends Controller
         $this->data['currency_code_label'] = $this->language->get('currency_code_label');
         $this->data['price_label'] = $this->language->get('price_label');
         $this->data['several_percent_label'] = $this->language->get('several_percent_label');
-        $this->data['several_percent_variable'] = $this->language->get('several_percent_variable');
+
 
         $this->data['variable_name'] = $page['variable_name'];
         $this->data['receiver_of_product_label'] = $this->language->get('receiver_of_product_label');
@@ -340,6 +340,7 @@ class ControllerInformationPageOrderBobs extends Controller
                 }
                 break;
             case 2:
+
                 $this->data['price'] = null;
                 $links_structure = array();
                 foreach ($page['links'] as $link) {
@@ -348,10 +349,11 @@ class ControllerInformationPageOrderBobs extends Controller
                     } else {
                         $links_structure[$link['percent']] = array();
                         $links_structure[$link['percent']][] = $link;
+                        $links_structure[$link['percent']]['text'] =
+                        $this->getPriceTextPresentationSeveral($page['one_price_total'], $link['percent']);
                     }
                 }
                 krsort($links_structure);
-                //$links_structure = array_reverse($links_structure);
                 $this->data['links_structure'] = $links_structure;
                 break;
         }
@@ -382,6 +384,13 @@ class ControllerInformationPageOrderBobs extends Controller
         $this->data['footer_small_label'] = $this->language->get('footer_small_label');
         $this->data['footer_label'] = $this->language->get('footer_label');
         $this->data['email_support'] = $this->config->get('config_email');
+    }
+
+    private function getPriceTextPresentationSeveral($price_total,$percent)
+    {
+        $price=$this->currency->format(floor(($price_total * $percent) / 100));
+        $several_percent_variable=$this->language->get('several_percent_variable');
+        return sprintf($several_percent_variable, $percent, $price);
     }
 
 

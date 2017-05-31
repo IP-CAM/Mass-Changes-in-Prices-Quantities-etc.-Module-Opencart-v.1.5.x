@@ -187,7 +187,7 @@
                             <ul class="link_box_general">
                                 <?php foreach($links_structure as $key => $links) { ?>
                                 <li class="link_box">
-                                    <h5><?php echo sprintf($several_percent_variable, $key) ?></h5>
+                                    <h5><?php echo $links['text'] ?></h5>
                                     <ul>
                                         <?php foreach($links as $link) {
                                             switch($link['type']) {
