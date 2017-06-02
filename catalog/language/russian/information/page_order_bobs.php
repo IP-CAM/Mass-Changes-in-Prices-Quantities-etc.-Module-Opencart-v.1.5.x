@@ -9,7 +9,6 @@ $_['column_quantity'] = '<span title="Количество">Кол-во</span>';
 $_['column_price'] = 'Цена';
 $_['column_total'] = 'Итого';
 
-$_['total_all_label'] = 'Итого, общая сумма:';
 
 $_['title'] = 'Оплата заказа №';
 $_['several_percent_variable'] = 'Оплатить %s%% от стоимости заказа (%s):';

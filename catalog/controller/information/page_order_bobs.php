@@ -176,7 +176,7 @@ class ControllerInformationPageOrderBobs extends Controller
             $this->data['column_total'] = $this->language->get('column_total');
 
             $this->data['order'] = true;
-            $order_products = $this->model_account_order->getOrderProducts($order['order_id']);
+            $order_products = $this->model_account_order->getOrderProducts($order[0]['order_id']);
             $products = Array();
             foreach ($order_products as $key => $order_product) {
                 $products[] = $order_product;
@@ -243,11 +243,7 @@ class ControllerInformationPageOrderBobs extends Controller
 
             }
 
-            if (count($order_products) > 1) {
-                $this->data['total_all'] = $this->currency->format($order['total']);
-                $this->data['total_all_label'] = $this->language->get('total_all_label');
-
-            }
+            $this->data['price_total_mod'] = $this->getPriceTotalMod($order,count($order_products));
         } else  //no order product free page order
         {
             if (!empty($page['description'])) {
@@ -266,11 +262,56 @@ class ControllerInformationPageOrderBobs extends Controller
      */
     private function getOrder($order_site_id)
     {
-        $order = $this->model_account_order->getOrder($order_site_id);
-        if (!$order_site_id) {
+
+        $order = $this->model_account_order->getOrderTotals($order_site_id);
+        if (!$order) {
             $order = 0; //No tabl, if no tabl programm
         }
         return $order;
+    }
+
+
+    /**
+     * Get price mod if they are
+     *
+     * @param $order
+     * @return array|bool
+     * @author  Bobs
+     */
+    private function getPriceTotalMod($order, $count_products)
+    {
+        $price_total_mod=array();
+        $total_price=false;
+        $net_price=0;
+        foreach($order as $key=>$price_mod)
+        {
+            if($price_mod['code']=='total')
+            {
+                $total_price=$price_mod['value'];
+            }
+            if($price_mod['code']=='sub_total')
+            {
+                $net_price=$price_mod['value'];
+            }
+        }
+        if($total_price!=$net_price && $total_price!==false)
+        {
+            $i=0;
+            foreach($order as $key=>$price_mod)
+            {
+                $price_total_mod[$i] = array();
+                $price_total_mod[$i]['title'] = $price_mod['title'];
+                $price_total_mod[$i]['text'] = $price_mod['text'];
+                $i++;
+            }
+        } else {
+            if($count_products>1)
+            {
+                $price_total_mod[0]['title'] = $price_mod['title'];
+                $price_total_mod[0]['text'] = $price_mod['text'];
+            }
+        }
+        return $price_total_mod;
     }
 
 

@@ -94,15 +94,17 @@
                             <td class="total"><?php echo $product['total']; ?></td>
                         </tr>
                         <?php } ?>
-                       <?php if(isset($total_all)) { ?>
-                        <tr>
-                            <td class="right" colspan="5">
-                                <?php echo $total_all_label; ?>
-                            </td>
-                            <td class="right">
-                                <?php echo $total_all; ?>
-                            </td>
-                        </tr>
+                        <?php if(isset($price_total_mod)) { ?>
+                            <?php foreach($price_total_mod as $price_mod) { ?>
+                                <tr>
+                                    <td class="right" colspan="5">
+                                        <?php echo $price_mod['title']; ?>
+                                    </td>
+                                    <td class="right">
+                                        <?php echo $price_mod['text']; ?>
+                                    </td>
+                                </tr>
+                            <?php } ?>
                         <?php } ?>
                         </tbody>
                     </table>
