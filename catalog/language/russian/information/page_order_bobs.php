@@ -12,7 +12,7 @@ $_['column_total'] = 'Итого';
 $_['total_all_label'] = 'Итого, общая сумма:';
 
 $_['title'] = 'Оплата заказа №';
-$_['several_percent_variable'] = 'Оплатить %s%% от стоимости заказа:';
+$_['several_percent_variable'] = 'Оплатить %s%% от стоимости заказа (%s):';
 
 $_['several_percent_label'] = 'Выберите процент предоплаты';
 $_['percent_label'] = 'Предоплата';
